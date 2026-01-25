@@ -24,6 +24,13 @@ export type OtherIncomeType =
 
 // Form answers structure
 export interface FormAnswers {
+  // Client fields
+  clientFirstName: string;
+  clientLastName: string;
+  clientEmail: string;
+  clientPhone: string;
+  brokerName: string;
+  // Form fields
   transactionType: TransactionType;
   isCondo: boolean | null;
   incomeSources: IncomeSource[];

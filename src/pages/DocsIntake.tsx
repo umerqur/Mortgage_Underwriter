@@ -10,11 +10,21 @@ import type {
   Document,
 } from '../lib/types';
 import { runEngine } from '../lib/docsEngine';
+import {
+  buildPdfBlob,
+  generatePdfFilename,
+  formatReportDate,
+} from '../lib/pdfReport';
 
 const STORAGE_KEY = 'mortgage_docs_form';
 const CHECKED_DOCS_KEY = 'mortgage_docs_checked';
 
 const initialFormState: FormAnswers = {
+  clientFirstName: '',
+  clientLastName: '',
+  clientEmail: '',
+  clientPhone: '',
+  brokerName: 'Ousmaan',
   transactionType: '',
   isCondo: null,
   incomeSources: [],
@@ -86,6 +96,11 @@ export default function DocsIntake() {
         return {
           ...initialFormState,
           ...parsed,
+          clientFirstName: parsed.clientFirstName || '',
+          clientLastName: parsed.clientLastName || '',
+          clientEmail: parsed.clientEmail || '',
+          clientPhone: parsed.clientPhone || '',
+          brokerName: parsed.brokerName || 'Ousmaan',
           downPaymentSources: parsed.downPaymentSources || [],
           selfEmployedType: parsed.selfEmployedType || '',
           otherIncomeTypes: parsed.otherIncomeTypes || [],
@@ -112,6 +127,7 @@ export default function DocsIntake() {
   const [submitted, setSubmitted] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   // Computed: is this a purchase transaction?
   const isPurchase =
@@ -144,6 +160,11 @@ export default function DocsIntake() {
           const result = runEngine({
             ...initialFormState,
             ...parsed,
+            clientFirstName: parsed.clientFirstName || '',
+            clientLastName: parsed.clientLastName || '',
+            clientEmail: parsed.clientEmail || '',
+            clientPhone: parsed.clientPhone || '',
+            brokerName: parsed.brokerName || 'Ousmaan',
             downPaymentSources: parsed.downPaymentSources || [],
             selfEmployedType: parsed.selfEmployedType || '',
             otherIncomeTypes: parsed.otherIncomeTypes || [],
@@ -210,6 +231,34 @@ export default function DocsIntake() {
     setValidationErrors([]);
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(CHECKED_DOCS_KEY);
+  };
+
+  const handleGeneratePdf = async () => {
+    setPdfLoading(true);
+    try {
+      const reportDate = formatReportDate();
+      const blob = await buildPdfBlob({
+        formData,
+        documents,
+        reportDate,
+      });
+      const url = URL.createObjectURL(blob);
+      const filename = generatePdfFilename(
+        formData.clientFirstName,
+        formData.clientLastName
+      );
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const toggleIncomeSource = (source: IncomeSource) => {
@@ -328,6 +377,118 @@ export default function DocsIntake() {
               </ul>
             </div>
           )}
+
+          {/* Client Information */}
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <label className="block text-sm font-semibold text-slate-900">
+              Client Information
+            </label>
+            <p className="mt-1 text-sm text-slate-500">
+              Enter client details for the document checklist
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="clientFirstName"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  id="clientFirstName"
+                  value={formData.clientFirstName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientFirstName: e.target.value,
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="clientLastName"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  id="clientLastName"
+                  value={formData.clientLastName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientLastName: e.target.value,
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="clientEmail"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="clientEmail"
+                  value={formData.clientEmail}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientEmail: e.target.value,
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="clientPhone"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Phone <span className="text-slate-400">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  id="clientPhone"
+                  value={formData.clientPhone}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      clientPhone: e.target.value,
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="brokerName"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Broker Name
+                </label>
+                <input
+                  type="text"
+                  id="brokerName"
+                  value={formData.brokerName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      brokerName: e.target.value,
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Transaction Type */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -688,6 +849,25 @@ export default function DocsIntake() {
                       }}
                     />
                   </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={handleGeneratePdf}
+                    disabled={pdfLoading}
+                    className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-400"
+                  >
+                    {pdfLoading ? 'Generating...' : 'Generate PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                  >
+                    Reset
+                  </button>
                 </div>
               </div>
             )}
