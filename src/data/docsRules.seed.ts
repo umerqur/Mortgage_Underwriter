@@ -1,141 +1,366 @@
-import type { Document, DocumentRule } from '../lib/types';
+import type { Document } from '../lib/types';
 
-// Helper to create document with unique ID
-const createDoc = (
-  name: string,
-  category: Document['category'],
-  note?: string
-): Document => ({
-  id: `${category}_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
-  name,
-  category,
-  note,
-});
+// =============================================================================
+// DOCUMENTS REGISTRY
+// Using stable IDs - no auto-generation from names
+// Document text matches spreadsheet exactly (including typos like "Amendements", "Interem")
+// =============================================================================
 
-// Transaction: Purchase Resale
-const purchaseResaleDocs: Document[] = [
-  createDoc('Agreement of Purchase and Sale', 'transaction'),
-  createDoc('MLS Listing', 'transaction'),
-  createDoc('Down Payment (90 Day Bank Statement)', 'transaction'),
-  createDoc('Gift Letter', 'transaction'),
-  createDoc('All Amendments', 'transaction'),
+export const documentsRegistry: Record<string, Document> = {
+  // Transaction Documents - Purchase Resale
+  doc_aps: {
+    id: 'doc_aps',
+    name: 'Agreement of Purchase of Sale',
+    category: 'transaction',
+  },
+  doc_mls: {
+    id: 'doc_mls',
+    name: 'MLS Listing',
+    category: 'transaction',
+  },
+  doc_amendments: {
+    id: 'doc_amendments',
+    name: 'All Amendments',
+    category: 'transaction',
+  },
+
+  // Transaction Documents - Purchase New
+  doc_amendments_waivers: {
+    id: 'doc_amendments_waivers',
+    name: 'All Amendements and Waivers',
+    category: 'transaction',
+  },
+  doc_interim_adjustments: {
+    id: 'doc_interim_adjustments',
+    name: 'Interem Statement of Adjustments',
+    category: 'transaction',
+  },
+  doc_deposits: {
+    id: 'doc_deposits',
+    name: 'Copy of all deposits',
+    category: 'transaction',
+  },
+
+  // Down Payment Documents
+  doc_dp_90day: {
+    id: 'doc_dp_90day',
+    name: 'Down Payment (90 Day Bank Statement)',
+    category: 'transaction',
+  },
+  doc_dp_bank_stmt: {
+    id: 'doc_dp_bank_stmt',
+    name: 'Down Payment (Bank Statement)',
+    category: 'transaction',
+  },
+  doc_gift_letter: {
+    id: 'doc_gift_letter',
+    name: 'Gift Letter',
+    category: 'transaction',
+  },
+
+  // Transaction Documents - Renewal/Refinance
+  doc_mortgage_stmt: {
+    id: 'doc_mortgage_stmt',
+    name: 'Mortgage Statements',
+    category: 'transaction',
+  },
+  doc_property_tax: {
+    id: 'doc_property_tax',
+    name: 'Property Tax Statements',
+    category: 'transaction',
+  },
+
+  // Property Documents - Condo
+  doc_condo_fee: {
+    id: 'doc_condo_fee',
+    name: 'Condo Fee Confirmation',
+    category: 'property',
+  },
+  doc_lease_bank_stmt: {
+    id: 'doc_lease_bank_stmt',
+    name: 'Lease Agreement & Bank Statements',
+    category: 'property',
+  },
+
+  // Income Documents - Employed
+  doc_t4_2yr: {
+    id: 'doc_t4_2yr',
+    name: 'T4 (Past 2 Years)',
+    category: 'income',
+  },
+  doc_noas_2yr: {
+    id: 'doc_noas_2yr',
+    name: 'NOAs (Past 2 Years)',
+    category: 'income',
+  },
+  doc_job_letter: {
+    id: 'doc_job_letter',
+    name: 'Job Letter',
+    category: 'income',
+  },
+  doc_paystubs: {
+    id: 'doc_paystubs',
+    name: 'Paystubs (Most Recent)',
+    category: 'income',
+  },
+
+  // Income Documents - Retired
+  doc_t4a_retired: {
+    id: 'doc_t4a_retired',
+    name: 'T4A (Most Recent) - CPP, OAS, Pension',
+    category: 'income',
+  },
+  doc_t1_most_recent: {
+    id: 'doc_t1_most_recent',
+    name: 'T1 General (Most Recent)',
+    category: 'income',
+  },
+  doc_noa_most_recent: {
+    id: 'doc_noa_most_recent',
+    name: 'NOA (Most Recent)',
+    category: 'income',
+  },
+  doc_bank_stmt_retired: {
+    id: 'doc_bank_stmt_retired',
+    name: 'Bank Statement',
+    category: 'income',
+  },
+
+  // Income Documents - Self-Employed (Common)
+  doc_t1_2yr: {
+    id: 'doc_t1_2yr',
+    name: 'T1 General (Past 2 Years)',
+    category: 'income',
+  },
+  doc_business_bank_stmt: {
+    id: 'doc_business_bank_stmt',
+    name: 'Business Bank Statements (12 Months)',
+    category: 'income',
+  },
+
+  // Income Documents - Self-Employed (Incorporated)
+  doc_articles_inc: {
+    id: 'doc_articles_inc',
+    name: 'Articles of Incorporation',
+    category: 'income',
+  },
+  doc_t2_2yr: {
+    id: 'doc_t2_2yr',
+    name: 'T2 (Past 2 Years)',
+    category: 'income',
+  },
+  doc_financial_stmt: {
+    id: 'doc_financial_stmt',
+    name: 'Financial Statements (Past 2 Years) - CPA Prep',
+    category: 'income',
+  },
+
+  // Income Documents - Self-Employed (Sole Proprietor)
+  doc_business_license: {
+    id: 'doc_business_license',
+    name: 'Business License',
+    category: 'income',
+  },
+
+  // Income Documents - Rental
+  doc_lease_agreement: {
+    id: 'doc_lease_agreement',
+    name: 'Lease Agreement',
+    category: 'income',
+  },
+  doc_bank_statements_rental: {
+    id: 'doc_bank_statements_rental',
+    name: 'Bank Statements',
+    category: 'income',
+  },
+  doc_first_last_deposits: {
+    id: 'doc_first_last_deposits',
+    name: 'First & Last Deposits (New Lease)',
+    category: 'income',
+  },
+  doc_t1_generals_rental: {
+    id: 'doc_t1_generals_rental',
+    name: 'T1 Generals',
+    category: 'income',
+  },
+
+  // Income Documents - Other Income Types
+  doc_child_care_benefit: {
+    id: 'doc_child_care_benefit',
+    name: 'Child Care Benefit (CRA Letter & Bank Statements)',
+    category: 'income',
+  },
+  doc_alimony: {
+    id: 'doc_alimony',
+    name: 'Alimony (Bank Statements & Separation Agreement)',
+    category: 'income',
+  },
+  doc_investment_income: {
+    id: 'doc_investment_income',
+    name: 'Investment Income (2 Years Full T1 Generals or T5s and NOAs)',
+    category: 'income',
+  },
+  doc_disability: {
+    id: 'doc_disability',
+    name: 'Disability Income (T1 General, T4A, Letter)',
+    category: 'income',
+  },
+  doc_survivors_pension: {
+    id: 'doc_survivors_pension',
+    name: "Survivor's Pension (T1 General / T4A / Letter)",
+    category: 'income',
+  },
+  doc_maternity_leave: {
+    id: 'doc_maternity_leave',
+    name: 'Maternity Leave Income (Job Letter w Return Date & last full paystub before Leave)',
+    category: 'income',
+  },
+
+  // Net Worth Documents
+  doc_rrsp_stmt: {
+    id: 'doc_rrsp_stmt',
+    name: 'RRSP Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+  doc_rdsp_stmt: {
+    id: 'doc_rdsp_stmt',
+    name: 'RDSP Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+  doc_spousal_rrsp_stmt: {
+    id: 'doc_spousal_rrsp_stmt',
+    name: 'Spousal RRSP Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+  doc_tfsa_stmt: {
+    id: 'doc_tfsa_stmt',
+    name: 'TFSA Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+  doc_fhsa_stmt: {
+    id: 'doc_fhsa_stmt',
+    name: 'FHSA Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+  doc_non_registered_stmt: {
+    id: 'doc_non_registered_stmt',
+    name: 'Non-Registered Account Statement',
+    category: 'net_worth',
+    note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
+  },
+};
+
+// =============================================================================
+// DOCUMENT GROUPINGS
+// These define which documents belong to which logical group for the engine
+// =============================================================================
+
+// Transaction: Purchase Resale (always included)
+export const purchaseResaleAlwaysDocs: string[] = [
+  'doc_aps',
+  'doc_mls',
+  'doc_amendments',
 ];
 
-// Transaction: Purchase New Construction
-const purchaseNewDocs: Document[] = [
-  createDoc('Agreement of Purchase and Sale', 'transaction'),
-  createDoc('All Amendments and Waivers', 'transaction'),
-  createDoc('Interim Statement of Adjustments', 'transaction'),
-  createDoc('Copy of All Deposits', 'transaction'),
-  createDoc('Down Payment (Bank Statement)', 'transaction'),
-  createDoc('Gift Letter', 'transaction'),
+// Transaction: Purchase New Construction (always included)
+export const purchaseNewAlwaysDocs: string[] = [
+  'doc_aps',
+  'doc_amendments_waivers',
+  'doc_interim_adjustments',
+  'doc_deposits',
 ];
 
 // Transaction: Renewal/Refinance
-const renewalRefinanceDocs: Document[] = [
-  createDoc('Mortgage Statements', 'transaction'),
-  createDoc('Property Tax Statements', 'transaction'),
+export const renewalRefinanceDocs: string[] = [
+  'doc_mortgage_stmt',
+  'doc_property_tax',
 ];
 
 // Property: Condo
-const condoDocs: Document[] = [
-  createDoc('Lease Agreement & Bank Statements', 'property'),
-  createDoc('Condo Fee Confirmation', 'property'),
-];
-
-// Income: Retired
-const retiredDocs: Document[] = [
-  createDoc('T4A (Most Recent) - CPP, OAS, Pension', 'income'),
-  createDoc('T1 General (Most Recent)', 'income'),
-  createDoc('NOA (Most Recent)', 'income'),
-  createDoc('Bank Statement', 'income'),
+export const condoDocs: string[] = [
+  'doc_condo_fee',
+  'doc_lease_bank_stmt',
 ];
 
 // Income: Employed
-const employedDocs: Document[] = [
-  createDoc('T4 (Past 2 Years)', 'income'),
-  createDoc('NOAs (Past 2 Years)', 'income'),
-  createDoc('Job Letter', 'income'),
-  createDoc('Paystubs (Most Recent)', 'income'),
+export const employedDocs: string[] = [
+  'doc_t4_2yr',
+  'doc_noas_2yr',
+  'doc_job_letter',
+  'doc_paystubs',
 ];
 
-// Income: Self-Employed
-const selfEmployedDocs: Document[] = [
-  createDoc('Articles of Incorporation', 'income'),
-  createDoc('Business License', 'income'),
-  createDoc('T1 General (Past 2 Years)', 'income'),
-  createDoc('NOAs (Past 2 Years)', 'income'),
-  createDoc('T2 (Past 2 Years)', 'income'),
-  createDoc('Financial Statements (Past 2 Years) - CPA Prep', 'income'),
-  createDoc('Business Bank Statements (12 Months)', 'income'),
+// Income: Retired
+export const retiredDocs: string[] = [
+  'doc_t4a_retired',
+  'doc_t1_most_recent',
+  'doc_noa_most_recent',
+  'doc_bank_stmt_retired',
 ];
 
 // Income: Rental
-const rentalDocs: Document[] = [
-  createDoc('Lease Agreement', 'income'),
-  createDoc('Bank Statements', 'income'),
-  createDoc('First & Last Deposits (New Lease)', 'income'),
-  createDoc('T1 Generals', 'income'),
+export const rentalDocs: string[] = [
+  'doc_lease_agreement',
+  'doc_bank_statements_rental',
+  'doc_first_last_deposits',
+  'doc_t1_generals_rental',
 ];
 
-// Income: Other
-const otherIncomeDocs: Document[] = [
-  createDoc('Child Care Benefit (CRA Letter & Bank Statements)', 'income'),
-  createDoc('Alimony (Bank Statements & Separation Agreement)', 'income'),
-  createDoc('Investment Income (2 Years Full T1 Generals or T5s and NOAs)', 'income'),
-  createDoc('Disability Income (T1 General, T4A, Letter)', 'income'),
-  createDoc("Survivor's Pension (T1 General, T4A, Letter)", 'income'),
-  createDoc('Maternity Leave Income (Job Letter w/ Return Date & Last Full Paystub Before Leave)', 'income'),
+// Income: Self-Employed - Always required when self-employed
+export const selfEmployedAlwaysDocs: string[] = [
+  'doc_t1_2yr',
+  'doc_noas_2yr',
 ];
 
-// Net Worth Account Statement
-const NET_WORTH_NOTE = 'BMO, SCOTIA (12 months) | Other Lenders (90 days)';
+// Income: Self-Employed - Incorporated specific
+export const selfEmployedIncorporatedDocs: string[] = [
+  'doc_articles_inc',
+  'doc_t2_2yr',
+  'doc_financial_stmt',
+  'doc_business_bank_stmt',
+];
 
-const netWorthDocs: Record<string, Document> = {
-  rrsp: createDoc('RRSP Statement', 'net_worth', NET_WORTH_NOTE),
-  rdsp: createDoc('RDSP Statement', 'net_worth', NET_WORTH_NOTE),
-  spousal_rrsp: createDoc('Spousal RRSP Statement', 'net_worth', NET_WORTH_NOTE),
-  tfsa: createDoc('TFSA Statement', 'net_worth', NET_WORTH_NOTE),
-  fhsa: createDoc('FHSA Statement', 'net_worth', NET_WORTH_NOTE),
-  non_registered: createDoc('Non-Registered Account Statement', 'net_worth', NET_WORTH_NOTE),
+// Income: Self-Employed - Sole Proprietor specific
+export const selfEmployedSoleProprietorDocs: string[] = [
+  'doc_business_license',
+  'doc_business_bank_stmt',
+];
+
+// Other Income Type mappings
+export const otherIncomeTypeDocMap: Record<string, string> = {
+  child_care_benefit: 'doc_child_care_benefit',
+  alimony: 'doc_alimony',
+  investment_income: 'doc_investment_income',
+  disability: 'doc_disability',
+  survivors_pension: 'doc_survivors_pension',
+  maternity_leave: 'doc_maternity_leave',
 };
 
-// Export all document rules
-export const documentRules: DocumentRule[] = [
-  // Transaction rules
-  { tag: 'purchase_resale', documents: purchaseResaleDocs },
-  { tag: 'purchase_new', documents: purchaseNewDocs },
-  { tag: 'renewal_refinance', documents: renewalRefinanceDocs },
-
-  // Property rules
-  { tag: 'condo', documents: condoDocs },
-
-  // Income rules
-  { tag: 'retired', documents: retiredDocs },
-  { tag: 'employed', documents: employedDocs },
-  { tag: 'self_employed', documents: selfEmployedDocs },
-  { tag: 'rental', documents: rentalDocs },
-  { tag: 'other', documents: otherIncomeDocs },
-
-  // Net worth rules
-  { tag: 'rrsp', documents: [netWorthDocs.rrsp] },
-  { tag: 'rdsp', documents: [netWorthDocs.rdsp] },
-  { tag: 'spousal_rrsp', documents: [netWorthDocs.spousal_rrsp] },
-  { tag: 'tfsa', documents: [netWorthDocs.tfsa] },
-  { tag: 'fhsa', documents: [netWorthDocs.fhsa] },
-  { tag: 'non_registered', documents: [netWorthDocs.non_registered] },
-];
-
-// Export for reference
-export const allDocuments = {
-  purchaseResale: purchaseResaleDocs,
-  purchaseNew: purchaseNewDocs,
-  renewalRefinance: renewalRefinanceDocs,
-  condo: condoDocs,
-  retired: retiredDocs,
-  employed: employedDocs,
-  selfEmployed: selfEmployedDocs,
-  rental: rentalDocs,
-  otherIncome: otherIncomeDocs,
-  netWorth: netWorthDocs,
+// Net Worth Account mappings
+export const netWorthDocMap: Record<string, string> = {
+  rrsp: 'doc_rrsp_stmt',
+  rdsp: 'doc_rdsp_stmt',
+  spousal_rrsp: 'doc_spousal_rrsp_stmt',
+  tfsa: 'doc_tfsa_stmt',
+  fhsa: 'doc_fhsa_stmt',
+  non_registered: 'doc_non_registered_stmt',
 };
+
+// Helper to get document by ID
+export function getDoc(id: string): Document {
+  const doc = documentsRegistry[id];
+  if (!doc) {
+    throw new Error(`Document not found: ${id}`);
+  }
+  return doc;
+}
+
+// Helper to get multiple documents by IDs
+export function getDocs(ids: string[]): Document[] {
+  return ids.map(getDoc);
+}

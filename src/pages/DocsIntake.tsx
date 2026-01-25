@@ -4,6 +4,9 @@ import type {
   TransactionType,
   IncomeSource,
   NetWorthAccount,
+  DownPaymentSource,
+  SelfEmployedType,
+  OtherIncomeType,
   Document,
 } from '../lib/types';
 import { runEngine } from '../lib/docsEngine';
@@ -16,6 +19,9 @@ const initialFormState: FormAnswers = {
   isCondo: null,
   incomeSources: [],
   netWorthAccounts: [],
+  downPaymentSources: [],
+  selfEmployedType: '',
+  otherIncomeTypes: [],
 };
 
 const transactionOptions: { value: TransactionType; label: string }[] = [
@@ -41,6 +47,28 @@ const netWorthOptions: { value: NetWorthAccount; label: string }[] = [
   { value: 'non_registered', label: 'Non-Registered' },
 ];
 
+const downPaymentOptions: { value: DownPaymentSource; label: string }[] = [
+  { value: 'savings', label: 'Savings' },
+  { value: 'sale_of_property', label: 'Sale of Property' },
+  { value: 'gift', label: 'Gift' },
+  { value: 'rrsp_hbp', label: 'RRSP HBP' },
+  { value: 'other', label: 'Other' },
+];
+
+const selfEmployedOptions: { value: SelfEmployedType; label: string }[] = [
+  { value: 'incorporated', label: 'Incorporated' },
+  { value: 'sole_proprietor', label: 'Sole Proprietor' },
+];
+
+const otherIncomeOptions: { value: OtherIncomeType; label: string }[] = [
+  { value: 'child_care_benefit', label: 'Child Care Benefit' },
+  { value: 'alimony', label: 'Alimony' },
+  { value: 'investment_income', label: 'Investment Income' },
+  { value: 'disability', label: 'Disability' },
+  { value: 'survivors_pension', label: "Survivor's Pension" },
+  { value: 'maternity_leave', label: 'Maternity Leave' },
+];
+
 const categoryLabels: Record<Document['category'], string> = {
   transaction: 'Transaction Documents',
   property: 'Property Documents',
@@ -53,7 +81,15 @@ export default function DocsIntake() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Ensure new fields have default values for backwards compatibility
+        return {
+          ...initialFormState,
+          ...parsed,
+          downPaymentSources: parsed.downPaymentSources || [],
+          selfEmployedType: parsed.selfEmployedType || '',
+          otherIncomeTypes: parsed.otherIncomeTypes || [],
+        };
       } catch {
         return initialFormState;
       }
@@ -77,6 +113,17 @@ export default function DocsIntake() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  // Computed: is this a purchase transaction?
+  const isPurchase =
+    formData.transactionType === 'purchase_resale' ||
+    formData.transactionType === 'purchase_new';
+
+  // Computed: is self-employed selected?
+  const isSelfEmployed = formData.incomeSources.includes('self_employed');
+
+  // Computed: is other income selected?
+  const isOtherIncome = formData.incomeSources.includes('other');
+
   // Persist form data to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
@@ -94,7 +141,13 @@ export default function DocsIntake() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.transactionType) {
-          const result = runEngine(parsed);
+          const result = runEngine({
+            ...initialFormState,
+            ...parsed,
+            downPaymentSources: parsed.downPaymentSources || [],
+            selfEmployedType: parsed.selfEmployedType || '',
+            otherIncomeTypes: parsed.otherIncomeTypes || [],
+          });
           if (result.documents.length > 0) {
             setDocuments(result.documents);
             setSubmitted(true);
@@ -121,8 +174,18 @@ export default function DocsIntake() {
       errors.push('Please select at least one income source');
     }
 
+    // Validate self-employed type if self-employed is selected
+    if (isSelfEmployed && !formData.selfEmployedType) {
+      errors.push('Please select your self-employment type');
+    }
+
+    // Validate other income types if other income is selected
+    if (isOtherIncome && formData.otherIncomeTypes.length === 0) {
+      errors.push('Please select at least one other income type');
+    }
+
     return errors;
-  }, [formData]);
+  }, [formData, isSelfEmployed, isOtherIncome]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,12 +213,30 @@ export default function DocsIntake() {
   };
 
   const toggleIncomeSource = (source: IncomeSource) => {
-    setFormData((prev) => ({
-      ...prev,
-      incomeSources: prev.incomeSources.includes(source)
+    setFormData((prev) => {
+      const newIncomeSources = prev.incomeSources.includes(source)
         ? prev.incomeSources.filter((s) => s !== source)
-        : [...prev.incomeSources, source],
-    }));
+        : [...prev.incomeSources, source];
+
+      // Clear dependent fields when parent is unchecked
+      let newSelfEmployedType = prev.selfEmployedType;
+      let newOtherIncomeTypes = prev.otherIncomeTypes;
+
+      if (source === 'self_employed' && prev.incomeSources.includes(source)) {
+        newSelfEmployedType = '';
+      }
+
+      if (source === 'other' && prev.incomeSources.includes(source)) {
+        newOtherIncomeTypes = [];
+      }
+
+      return {
+        ...prev,
+        incomeSources: newIncomeSources,
+        selfEmployedType: newSelfEmployedType,
+        otherIncomeTypes: newOtherIncomeTypes,
+      };
+    });
   };
 
   const toggleNetWorthAccount = (account: NetWorthAccount) => {
@@ -164,6 +245,24 @@ export default function DocsIntake() {
       netWorthAccounts: prev.netWorthAccounts.includes(account)
         ? prev.netWorthAccounts.filter((a) => a !== account)
         : [...prev.netWorthAccounts, account],
+    }));
+  };
+
+  const toggleDownPaymentSource = (source: DownPaymentSource) => {
+    setFormData((prev) => ({
+      ...prev,
+      downPaymentSources: prev.downPaymentSources.includes(source)
+        ? prev.downPaymentSources.filter((s) => s !== source)
+        : [...prev.downPaymentSources, source],
+    }));
+  };
+
+  const toggleOtherIncomeType = (incomeType: OtherIncomeType) => {
+    setFormData((prev) => ({
+      ...prev,
+      otherIncomeTypes: prev.otherIncomeTypes.includes(incomeType)
+        ? prev.otherIncomeTypes.filter((t) => t !== incomeType)
+        : [...prev.otherIncomeTypes, incomeType],
     }));
   };
 
@@ -178,6 +277,16 @@ export default function DocsIntake() {
       return next;
     });
   };
+
+  // Clear down payment sources when transaction type changes to non-purchase
+  useEffect(() => {
+    if (!isPurchase && formData.downPaymentSources.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        downPaymentSources: [],
+      }));
+    }
+  }, [isPurchase, formData.downPaymentSources.length]);
 
   // Group documents by category
   const groupedDocs = documents.reduce(
@@ -259,6 +368,40 @@ export default function DocsIntake() {
             </div>
           </div>
 
+          {/* Down Payment Sources - Only show for purchase transactions */}
+          {isPurchase && (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-900">
+                Down Payment Sources
+              </label>
+              <p className="mt-1 text-sm text-slate-500">
+                Where is your down payment coming from? (Select all that apply)
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {downPaymentOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`flex cursor-pointer items-center rounded-lg border p-3 transition-all ${
+                      formData.downPaymentSources.includes(option.value)
+                        ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.downPaymentSources.includes(option.value)}
+                      onChange={() => toggleDownPaymentSource(option.value)}
+                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Condo */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <label className="block text-sm font-semibold text-slate-900">
@@ -332,6 +475,81 @@ export default function DocsIntake() {
               ))}
             </div>
           </div>
+
+          {/* Self-Employed Type - Only show if self-employed is selected */}
+          {isSelfEmployed && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-900">
+                Self-Employment Type <span className="text-red-500">*</span>
+              </label>
+              <p className="mt-1 text-sm text-slate-500">
+                What type of self-employment?
+              </p>
+              <div className="mt-4 flex gap-4">
+                {selfEmployedOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg border p-4 transition-all ${
+                      formData.selfEmployedType === option.value
+                        ? 'border-amber-500 bg-amber-100 ring-1 ring-amber-500'
+                        : 'border-amber-200 bg-white hover:border-amber-300 hover:bg-amber-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="selfEmployedType"
+                      value={option.value}
+                      checked={formData.selfEmployedType === option.value}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          selfEmployedType: e.target.value as SelfEmployedType,
+                        }))
+                      }
+                      className="h-4 w-4 border-amber-300 text-amber-600 focus:ring-amber-500"
+                    />
+                    <span className="ml-2 font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Other Income Types - Only show if other income is selected */}
+          {isOtherIncome && (
+            <div className="rounded-xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-900">
+                Other Income Types <span className="text-red-500">*</span>
+              </label>
+              <p className="mt-1 text-sm text-slate-500">
+                Select the types of other income you receive
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {otherIncomeOptions.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`flex cursor-pointer items-center rounded-lg border p-3 transition-all ${
+                      formData.otherIncomeTypes.includes(option.value)
+                        ? 'border-teal-500 bg-teal-100 ring-1 ring-teal-500'
+                        : 'border-teal-200 bg-white hover:border-teal-300 hover:bg-teal-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.otherIncomeTypes.includes(option.value)}
+                      onChange={() => toggleOtherIncomeType(option.value)}
+                      className="h-4 w-4 rounded border-teal-300 text-teal-600 focus:ring-teal-500"
+                    />
+                    <span className="ml-2 text-sm font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Net Worth Accounts */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

@@ -1,9 +1,24 @@
 import type { FormAnswers, Document, EngineResult } from './types';
-import { documentRules } from '../data/docsRules.seed';
+import {
+  getDocs,
+  getDoc,
+  purchaseResaleAlwaysDocs,
+  purchaseNewAlwaysDocs,
+  renewalRefinanceDocs,
+  condoDocs,
+  employedDocs,
+  retiredDocs,
+  rentalDocs,
+  selfEmployedAlwaysDocs,
+  selfEmployedIncorporatedDocs,
+  selfEmployedSoleProprietorDocs,
+  otherIncomeTypeDocMap,
+  netWorthDocMap,
+} from '../data/docsRules.seed';
 
 /**
  * Builds an array of tags based on form answers.
- * Tags are used to match against document rules.
+ * Tags are used for tracking what was selected.
  */
 export function buildTags(answers: FormAnswers): string[] {
   const tags: string[] = [];
@@ -23,6 +38,21 @@ export function buildTags(answers: FormAnswers): string[] {
     tags.push(source);
   }
 
+  // Add self-employed type if applicable
+  if (answers.selfEmployedType) {
+    tags.push(`self_employed_${answers.selfEmployedType}`);
+  }
+
+  // Add other income type tags
+  for (const incomeType of answers.otherIncomeTypes) {
+    tags.push(`other_income_${incomeType}`);
+  }
+
+  // Add down payment source tags
+  for (const source of answers.downPaymentSources) {
+    tags.push(`dp_${source}`);
+  }
+
   // Add net worth account tags
   for (const account of answers.netWorthAccounts) {
     tags.push(account);
@@ -32,25 +62,155 @@ export function buildTags(answers: FormAnswers): string[] {
 }
 
 /**
- * Recommends documents based on matching tags.
- * Deduplicates documents by name.
+ * Rule-driven document recommendation engine.
+ * Each rule explicitly defines when documents are included.
  */
-export function recommendDocuments(tags: string[]): Document[] {
+export function recommendDocuments(answers: FormAnswers): Document[] {
   const documentsMap = new Map<string, Document>();
 
-  for (const tag of tags) {
-    const rule = documentRules.find((r) => r.tag === tag);
-    if (rule) {
-      for (const doc of rule.documents) {
-        // Deduplicate by document name
-        if (!documentsMap.has(doc.name)) {
-          documentsMap.set(doc.name, doc);
-        }
+  const addDoc = (id: string) => {
+    const doc = getDoc(id);
+    if (!documentsMap.has(doc.id)) {
+      documentsMap.set(doc.id, doc);
+    }
+  };
+
+  const addDocs = (ids: string[]) => {
+    for (const doc of getDocs(ids)) {
+      if (!documentsMap.has(doc.id)) {
+        documentsMap.set(doc.id, doc);
+      }
+    }
+  };
+
+  const isPurchase =
+    answers.transactionType === 'purchase_resale' ||
+    answers.transactionType === 'purchase_new';
+
+  // ==========================================================================
+  // TRANSACTION RULES
+  // ==========================================================================
+
+  // Purchase Resale - always includes these docs
+  if (answers.transactionType === 'purchase_resale') {
+    addDocs(purchaseResaleAlwaysDocs);
+  }
+
+  // Purchase New Construction - always includes these docs
+  if (answers.transactionType === 'purchase_new') {
+    addDocs(purchaseNewAlwaysDocs);
+  }
+
+  // Renewal/Refinance
+  if (answers.transactionType === 'renewal_refinance') {
+    addDocs(renewalRefinanceDocs);
+  }
+
+  // ==========================================================================
+  // DOWN PAYMENT RULES (only for purchase transactions)
+  // ==========================================================================
+
+  if (isPurchase) {
+    // Down payment bank statement - include if any non-gift source selected
+    const needsDownPaymentStatement = answers.downPaymentSources.some(
+      (source) =>
+        source === 'savings' ||
+        source === 'sale_of_property' ||
+        source === 'rrsp_hbp' ||
+        source === 'other'
+    );
+
+    if (needsDownPaymentStatement) {
+      if (answers.transactionType === 'purchase_resale') {
+        addDoc('doc_dp_90day');
+      } else if (answers.transactionType === 'purchase_new') {
+        addDoc('doc_dp_bank_stmt');
+      }
+    }
+
+    // Gift Letter - include only if gift is selected
+    if (answers.downPaymentSources.includes('gift')) {
+      addDoc('doc_gift_letter');
+    }
+  }
+
+  // ==========================================================================
+  // PROPERTY RULES
+  // ==========================================================================
+
+  // Condo - include condo documents
+  if (answers.isCondo === true) {
+    addDocs(condoDocs);
+  }
+
+  // ==========================================================================
+  // INCOME RULES
+  // ==========================================================================
+
+  // Employed - include all employed docs
+  if (answers.incomeSources.includes('employed')) {
+    addDocs(employedDocs);
+  }
+
+  // Retired - include all retired docs
+  if (answers.incomeSources.includes('retired')) {
+    addDocs(retiredDocs);
+  }
+
+  // Rental - include all rental docs
+  if (answers.incomeSources.includes('rental')) {
+    addDocs(rentalDocs);
+  }
+
+  // ==========================================================================
+  // SELF-EMPLOYED RULES (partial selection based on type)
+  // ==========================================================================
+
+  if (answers.incomeSources.includes('self_employed')) {
+    // Always include common self-employed docs
+    addDocs(selfEmployedAlwaysDocs);
+
+    // Incorporated specific docs
+    if (answers.selfEmployedType === 'incorporated') {
+      addDocs(selfEmployedIncorporatedDocs);
+    }
+
+    // Sole Proprietor specific docs
+    if (answers.selfEmployedType === 'sole_proprietor') {
+      addDocs(selfEmployedSoleProprietorDocs);
+    }
+  }
+
+  // ==========================================================================
+  // OTHER INCOME RULES (partial selection based on selected types)
+  // ==========================================================================
+
+  if (answers.incomeSources.includes('other')) {
+    // Only include the specific other income docs that were selected
+    for (const incomeType of answers.otherIncomeTypes) {
+      const docId = otherIncomeTypeDocMap[incomeType];
+      if (docId) {
+        addDoc(docId);
       }
     }
   }
 
-  // Convert map values to array and sort by category then name
+  // ==========================================================================
+  // NET WORTH / ASSETS RULES
+  // ==========================================================================
+
+  // For each selected net worth account, include the matching statement doc
+  for (const account of answers.netWorthAccounts) {
+    const docId = netWorthDocMap[account];
+    if (docId) {
+      addDoc(docId);
+    }
+  }
+
+  // ==========================================================================
+  // SORT AND RETURN
+  // ==========================================================================
+
   const documents = Array.from(documentsMap.values());
 
   const categoryOrder: Record<Document['category'], number> = {
@@ -75,7 +235,7 @@ export function recommendDocuments(tags: string[]): Document[] {
  */
 export function runEngine(answers: FormAnswers): EngineResult {
   const tags = buildTags(answers);
-  const documents = recommendDocuments(tags);
+  const documents = recommendDocuments(answers);
 
   return {
     tags,
