@@ -1,12 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { logout, getCurrentUser } from '../lib/netlifyIdentity';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
 
 export default function TopBar() {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     navigate('/');
   };
 
