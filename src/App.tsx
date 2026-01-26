@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { initNetlifyIdentity, onLogout } from './lib/netlifyIdentity';
+import { AuthProvider } from './hooks/useAuth';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import DocsIntake from './pages/DocsIntake';
@@ -17,36 +16,28 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  useEffect(() => {
-    // Initialize Netlify Identity on app load
-    initNetlifyIdentity();
-
-    // Handle logout - refresh page to clear state
-    onLogout(() => {
-      window.location.href = '/';
-    });
-  }, []);
-
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/app"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <DocsIntake />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+          {/* Protected routes */}
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <DocsIntake />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
