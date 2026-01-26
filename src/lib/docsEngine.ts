@@ -14,6 +14,7 @@ import {
   selfEmployedSoleProprietorDocs,
   otherIncomeTypeDocMap,
   netWorthDocMap,
+  existingPropertiesDocs,
 } from '../data/docsRules.seed';
 
 /**
@@ -56,6 +57,11 @@ export function buildTags(answers: FormAnswers): string[] {
   // Add net worth account tags
   for (const account of answers.netWorthAccounts) {
     tags.push(account);
+  }
+
+  // Add other properties tag if applicable
+  if (answers.hasOtherProperties === true) {
+    tags.push('has_other_properties');
   }
 
   return tags;
@@ -208,6 +214,16 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   }
 
   // ==========================================================================
+  // EXISTING PROPERTIES RULES
+  // ==========================================================================
+
+  // If the client owns other properties, include all existing properties docs
+  // Note: This is a single checklist requirement, not per property
+  if (answers.hasOtherProperties === true) {
+    addDocs(existingPropertiesDocs);
+  }
+
+  // ==========================================================================
   // SORT AND RETURN
   // ==========================================================================
 
@@ -218,6 +234,7 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
     property: 2,
     income: 3,
     net_worth: 4,
+    existing_properties: 5,
   };
 
   documents.sort((a, b) => {

@@ -253,6 +253,28 @@ export const documentsRegistry: Record<string, Document> = {
     category: 'net_worth',
     note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
   },
+
+  // Existing Properties Documents
+  doc_mortgage_stmt_other: {
+    id: 'doc_mortgage_stmt_other',
+    name: 'Mortgage Statements (Other Properties)',
+    category: 'existing_properties',
+  },
+  doc_property_tax_other: {
+    id: 'doc_property_tax_other',
+    name: 'Property Tax Statements (Other Properties)',
+    category: 'existing_properties',
+  },
+  doc_rental_agreements: {
+    id: 'doc_rental_agreements',
+    name: 'Rental Agreements (If Applicable)',
+    category: 'existing_properties',
+  },
+  doc_bank_stmt_rental_income: {
+    id: 'doc_bank_stmt_rental_income',
+    name: 'Bank Statements Showing Rental Income (If Applicable)',
+    category: 'existing_properties',
+  },
 };
 
 // =============================================================================
@@ -350,6 +372,14 @@ export const netWorthDocMap: Record<string, string> = {
   fhsa: 'doc_fhsa_stmt',
   non_registered: 'doc_non_registered_stmt',
 };
+
+// Existing Properties Documents
+export const existingPropertiesDocs: string[] = [
+  'doc_mortgage_stmt_other',
+  'doc_property_tax_other',
+  'doc_rental_agreements',
+  'doc_bank_stmt_rental_income',
+];
 
 // Helper to get document by ID
 export function getDoc(id: string): Document {

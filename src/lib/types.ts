@@ -38,13 +38,16 @@ export interface FormAnswers {
   downPaymentSources: DownPaymentSource[];
   selfEmployedType: SelfEmployedType;
   otherIncomeTypes: OtherIncomeType[];
+  // Existing properties
+  hasOtherProperties: boolean | null;
+  numberOfOtherProperties: number | null;
 }
 
 // Document definition
 export interface Document {
   id: string;
   name: string;
-  category: 'transaction' | 'property' | 'income' | 'net_worth';
+  category: 'transaction' | 'property' | 'income' | 'net_worth' | 'existing_properties';
   note?: string;
 }
 

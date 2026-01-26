@@ -145,13 +145,14 @@ const otherIncomeLabels: Record<string, string> = {
   maternity_leave: 'Maternity Leave',
 };
 
-const categoryOrder = ['transaction', 'property', 'income', 'net_worth'] as const;
+const categoryOrder = ['transaction', 'property', 'income', 'net_worth', 'existing_properties'] as const;
 
 const categoryLabels: Record<string, string> = {
   transaction: 'Transaction',
   property: 'Property',
   income: 'Income',
   net_worth: 'Assets',
+  existing_properties: 'Existing Properties',
 };
 
 function MortgagePdfDocument({ formData, documents, reportDate }: PdfReportParams) {
@@ -257,6 +258,18 @@ function MortgagePdfDocument({ formData, documents, reportDate }: PdfReportParam
               {formatList(formData.netWorthAccounts, netWorthLabels)}
             </Text>
           </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Other Properties:</Text>
+            <Text style={styles.summaryValue}>
+              {formData.hasOtherProperties === true ? 'Yes' : formData.hasOtherProperties === false ? 'No' : 'Not specified'}
+            </Text>
+          </View>
+          {formData.hasOtherProperties === true && formData.numberOfOtherProperties && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Number of Other Properties:</Text>
+              <Text style={styles.summaryValue}>{formData.numberOfOtherProperties}</Text>
+            </View>
+          )}
         </View>
 
         {/* Documents Block */}

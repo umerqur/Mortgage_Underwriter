@@ -32,6 +32,8 @@ const initialFormState: FormAnswers = {
   downPaymentSources: [],
   selfEmployedType: '',
   otherIncomeTypes: [],
+  hasOtherProperties: null,
+  numberOfOtherProperties: null,
 };
 
 const transactionOptions: { value: TransactionType; label: string }[] = [
@@ -84,6 +86,7 @@ const categoryLabels: Record<Document['category'], string> = {
   property: 'Property Documents',
   income: 'Income Documents',
   net_worth: 'Net Worth Documents',
+  existing_properties: 'Existing Properties',
 };
 
 export default function DocsIntake() {
@@ -104,6 +107,8 @@ export default function DocsIntake() {
           downPaymentSources: parsed.downPaymentSources || [],
           selfEmployedType: parsed.selfEmployedType || '',
           otherIncomeTypes: parsed.otherIncomeTypes || [],
+          hasOtherProperties: parsed.hasOtherProperties ?? null,
+          numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
         };
       } catch {
         return initialFormState;
@@ -168,6 +173,8 @@ export default function DocsIntake() {
             downPaymentSources: parsed.downPaymentSources || [],
             selfEmployedType: parsed.selfEmployedType || '',
             otherIncomeTypes: parsed.otherIncomeTypes || [],
+            hasOtherProperties: parsed.hasOtherProperties ?? null,
+            numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
           });
           if (result.documents.length > 0) {
             setDocuments(result.documents);
@@ -605,6 +612,81 @@ export default function DocsIntake() {
             </div>
           </div>
 
+          {/* Other Properties */}
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <label className="block text-sm font-semibold text-slate-900">
+              Do you own other properties?
+            </label>
+            <p className="mt-1 text-sm text-slate-500">
+              Properties beyond the one involved in this transaction
+            </p>
+            <div className="mt-4 flex gap-4">
+              {[
+                { value: true, label: 'Yes' },
+                { value: false, label: 'No' },
+              ].map((option) => (
+                <label
+                  key={String(option.value)}
+                  className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg border p-4 transition-all ${
+                    formData.hasOtherProperties === option.value
+                      ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="hasOtherProperties"
+                    value={String(option.value)}
+                    checked={formData.hasOtherProperties === option.value}
+                    onChange={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        hasOtherProperties: option.value,
+                        // Clear numberOfOtherProperties if set to false
+                        numberOfOtherProperties: option.value ? prev.numberOfOtherProperties : null,
+                      }))
+                    }
+                    className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="ml-2 font-medium text-slate-700">
+                    {option.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Number of Other Properties - Only show if hasOtherProperties is true */}
+          {formData.hasOtherProperties === true && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+              <label
+                htmlFor="numberOfOtherProperties"
+                className="block text-sm font-semibold text-slate-900"
+              >
+                How many other properties?
+              </label>
+              <p className="mt-1 text-sm text-slate-500">
+                Enter the number of additional properties you own
+              </p>
+              <input
+                type="number"
+                id="numberOfOtherProperties"
+                min={1}
+                max={10}
+                value={formData.numberOfOtherProperties ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    numberOfOtherProperties: value ? Math.min(10, Math.max(1, parseInt(value, 10))) : null,
+                  }));
+                }}
+                className="mt-4 block w-32 rounded-lg border border-emerald-300 px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                placeholder="1"
+              />
+            </div>
+          )}
+
           {/* Income Sources */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <label className="block text-sm font-semibold text-slate-900">
@@ -784,7 +866,7 @@ export default function DocsIntake() {
             ) : (
               <div className="space-y-6">
                 {(
-                  ['transaction', 'property', 'income', 'net_worth'] as const
+                  ['transaction', 'property', 'income', 'net_worth', 'existing_properties'] as const
                 ).map((category) => {
                   const docs = groupedDocs[category];
                   if (!docs || docs.length === 0) return null;
