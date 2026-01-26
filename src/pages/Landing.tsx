@@ -4,10 +4,9 @@ import { useState } from 'react';
 // Request access email - update this when domain email is ready
 const REQUEST_ACCESS_EMAIL = 'umer.qureshi@gmail.com';
 
-// Hero image from Unsplash - Professional desk with documents and laptop
-// Photo by Scott Graham on Unsplash: https://unsplash.com/photos/5fNmWej4tAA
+// Hero image from Unsplash - Modern home interior
 const HERO_IMAGE_URL =
-  'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1920&q=80';
+  'https://images.unsplash.com/photo-1724482606633-fa74fe4f5de1?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
 // Trust strip items
 const trustItems = [
@@ -210,12 +209,27 @@ Thank you.`
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-slate-50 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center py-16 lg:py-24">
-            {/* Left column - Text */}
-            <div className="text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100 text-sky-700 rounded-full text-sm font-medium mb-6">
+      <section className="relative overflow-hidden min-h-[520px] lg:min-h-[600px]">
+        {/* Background Image Layer */}
+        <div className="absolute inset-0">
+          <img
+            src={HERO_IMAGE_URL}
+            alt="Modern home interior"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Overlay A: Light global tint to soften the image */}
+        <div className="absolute inset-0 bg-white/10" />
+
+        {/* Overlay B: Left-to-right white gradient for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 via-40% to-transparent" />
+
+        {/* Content Layer */}
+        <div className="relative z-10 h-full min-h-[520px] lg:min-h-[600px] flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-20 pb-16 lg:pt-24 lg:pb-20">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-sky-100/90 text-sky-700 rounded-full text-sm font-medium mb-6 backdrop-blur-sm">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -225,7 +239,7 @@ Thank you.`
                 Mortgage intake,{' '}
                 <span className="text-sky-600">simplified</span>
               </h1>
-              <p className="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed max-w-xl">
+              <p className="mt-6 text-lg sm:text-xl text-slate-700 leading-relaxed">
                 Streamline your underwriting workflow. Generate document checklists, standardize packages, and reduce manual CRM entry—all in one place.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row gap-4">
@@ -240,22 +254,11 @@ Thank you.`
                 </a>
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-sm transition-all hover:border-slate-300"
+                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-700 bg-white/90 hover:bg-white border border-slate-200 rounded-xl shadow-sm transition-all hover:border-slate-300 backdrop-blur-sm"
                 >
                   Log in
                 </Link>
               </div>
-            </div>
-
-            {/* Right column - Image with fade */}
-            <div className="relative lg:h-[500px] h-[300px] rounded-2xl overflow-hidden shadow-2xl">
-              <img
-                src={HERO_IMAGE_URL}
-                alt="Professional mortgage document workspace"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              {/* Gradient overlay - white on left fading to transparent on right */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-slate-50/50 to-transparent lg:via-transparent" />
             </div>
           </div>
         </div>
