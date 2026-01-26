@@ -344,6 +344,25 @@ export default function DocsIntake() {
     }
   }, [isPurchase, formData.downPaymentSources.length]);
 
+  // Clear per-property documents from checkedDocs when hasOtherProperties changes to No
+  useEffect(() => {
+    if (formData.hasOtherProperties === false) {
+      setCheckedDocs((prev) => {
+        const next = new Set(prev);
+        // Remove any per-property document IDs
+        for (const docId of prev) {
+          if (
+            docId.startsWith('doc_other_property_mortgage_statement_') ||
+            docId.startsWith('doc_other_property_tax_statement_')
+          ) {
+            next.delete(docId);
+          }
+        }
+        return next;
+      });
+    }
+  }, [formData.hasOtherProperties]);
+
   // Group documents by category
   const groupedDocs = documents.reduce(
     (acc, doc) => {
