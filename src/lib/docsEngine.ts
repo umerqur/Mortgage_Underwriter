@@ -14,8 +14,30 @@ import {
   selfEmployedSoleProprietorDocs,
   otherIncomeTypeDocMap,
   netWorthDocMap,
-  existingPropertiesDocs,
 } from '../data/docsRules.seed';
+
+/**
+ * Generates per-property documents at runtime based on the number of other properties.
+ * Creates 2 documents per property: Mortgage Statement and Property Tax Statement.
+ */
+function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
+  const docs: Document[] = [];
+
+  for (let i = 1; i <= numberOfProperties; i++) {
+    docs.push({
+      id: `doc_other_property_mortgage_statement_${i}`,
+      name: `Mortgage Statement (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_tax_statement_${i}`,
+      name: `Property Tax Statement (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+  }
+
+  return docs;
+}
 
 /**
  * Builds an array of tags based on form answers.
@@ -217,10 +239,14 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // EXISTING PROPERTIES RULES
   // ==========================================================================
 
-  // If the client owns other properties, include all existing properties docs
-  // Note: This is a single checklist requirement, not per property
-  if (answers.hasOtherProperties === true) {
-    addDocs(existingPropertiesDocs);
+  // If the client owns other properties, generate per-property documents
+  // This creates 2 documents per property: Mortgage Statement and Property Tax Statement
+  if (answers.hasOtherProperties === true && answers.numberOfOtherProperties) {
+    const perPropertyDocs = generatePerPropertyDocuments(answers.numberOfOtherProperties);
+    for (const doc of perPropertyDocs) {
+      // Per-property docs are intentionally not deduped - add directly
+      documentsMap.set(doc.id, doc);
+    }
   }
 
   // ==========================================================================

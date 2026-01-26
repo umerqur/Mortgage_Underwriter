@@ -254,7 +254,7 @@ export const documentsRegistry: Record<string, Document> = {
     note: 'BMO, SCOTIA (12 months) | Other Lenders (90 days)',
   },
 
-  // Existing Properties Documents
+  // Existing Properties Documents (legacy - kept for backwards compatibility)
   doc_mortgage_stmt_other: {
     id: 'doc_mortgage_stmt_other',
     name: 'Mortgage Statements (Other Properties)',
@@ -273,6 +273,18 @@ export const documentsRegistry: Record<string, Document> = {
   doc_bank_stmt_rental_income: {
     id: 'doc_bank_stmt_rental_income',
     name: 'Bank Statements Showing Rental Income (If Applicable)',
+    category: 'existing_properties',
+  },
+
+  // Per-Property Base Documents (used as templates for runtime generation)
+  doc_other_property_mortgage_statement_base: {
+    id: 'doc_other_property_mortgage_statement_base',
+    name: 'Mortgage Statement',
+    category: 'existing_properties',
+  },
+  doc_other_property_tax_statement_base: {
+    id: 'doc_other_property_tax_statement_base',
+    name: 'Property Tax Statement',
     category: 'existing_properties',
   },
 };
