@@ -1,41 +1,52 @@
-export function LogoIcon({ size = 24 }: { size?: number }) {
+export function LogoIcon({ size = 28 }: { size?: number }) {
+  const s = size
   return (
     <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
+      width={s}
+      height={s}
+      viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
       <rect
-        x="7"
-        y="8"
-        width="18"
-        height="16"
-        rx="3"
+        x="18"
+        y="16"
+        width="38"
+        height="38"
+        rx="12"
         stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.9"
+        strokeWidth="10"
+        opacity="0.35"
       />
       <rect
         x="10"
-        y="11"
-        width="18"
-        height="16"
-        rx="3"
+        y="20"
+        width="38"
+        height="38"
+        rx="12"
         stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.6"
+        strokeWidth="10"
+        opacity="0.55"
       />
       <rect
-        x="13"
-        y="14"
-        width="12"
-        height="10"
-        rx="2"
+        x="6"
+        y="6"
+        width="44"
+        height="44"
+        rx="14"
+        stroke="currentColor"
+        strokeWidth="10"
+        opacity="1"
+      />
+      <rect
+        x="20"
+        y="22"
+        width="24"
+        height="24"
+        rx="8"
         fill="currentColor"
-        opacity="0.25"
+        opacity="0.22"
       />
     </svg>
   )
