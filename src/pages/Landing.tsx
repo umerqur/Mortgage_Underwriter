@@ -89,8 +89,10 @@ export default function Landing() {
         </Container>
       </section>
 
-      {/* Features Grid - "Bento Style" */}
-      <section className="py-24 bg-[#0b1220]">
+      {/* Dark section wrapper - everything below hero */}
+      <div className="bg-[#0b1220]">
+        {/* Features Grid - "Bento Style" */}
+        <section className="py-24">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Capabilities</h2>
@@ -114,8 +116,8 @@ export default function Landing() {
         </Container>
       </section>
 
-      {/* Security Focus */}
-      <section className="py-32 overflow-hidden bg-[#0b1220]">
+        {/* Security Focus */}
+        <section className="py-32 overflow-hidden">
         <Container>
           <div className="bg-slate-950 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden">
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-[120px]" />
@@ -158,8 +160,8 @@ export default function Landing() {
         </Container>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-24 bg-[#0b1220]">
+        {/* FAQ Section */}
+        <section className="py-24">
         <Container>
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
@@ -200,18 +202,19 @@ export default function Landing() {
         </Container>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#0b1220] py-20">
-        <Container>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Logo size="sm" />
-              <span className="font-bold text-white tracking-tight">BrokerOps</span>
+        {/* Footer */}
+        <footer className="py-20">
+          <Container>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Logo size="sm" />
+                <span className="font-bold text-white tracking-tight">BrokerOps</span>
+              </div>
+              <p className="text-slate-400 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
             </div>
-            <p className="text-slate-400 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
-          </div>
-        </Container>
-      </footer>
+          </Container>
+        </footer>
+      </div>
     </div>
   );
 }
