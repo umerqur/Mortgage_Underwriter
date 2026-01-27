@@ -44,7 +44,7 @@ export default function Landing() {
               <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">BrokerOps</span>
             </div>
             <div className="flex items-center gap-4 sm:gap-8">
-              <a href={mailtoLink} className="hidden sm:block text-sm font-semibold text-slate-600 hover:text-sky-600 transition-colors">Request Access</a>
+              <a href={mailtoLink} className="hidden sm:block text-sm font-semibold text-black hover:text-slate-600 transition-colors">Request Access</a>
               <Link to="/login">
                 <Button variant="primary" className="py-2 px-4 sm:py-2.5 sm:px-5 text-sm sm:text-base">Log in</Button>
               </Link>
