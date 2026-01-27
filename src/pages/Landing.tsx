@@ -90,11 +90,11 @@ export default function Landing() {
       </section>
 
       {/* Features Grid - "Bento Style" */}
-      <section className="py-24 bg-slate-50 border-y border-slate-200">
+      <section className="py-24 bg-black border-y border-white/10">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Capabilities</h2>
-            <p className="text-4xl font-bold text-slate-950 tracking-tight">Everything you need to move faster.</p>
+            <p className="text-4xl font-bold text-white tracking-tight">Everything you need to move faster.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -102,12 +102,12 @@ export default function Landing() {
               { title: "Lender-Ready PDFs", desc: "Clean, professional exports in seconds.", icon: "M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
               { title: "Complex Income", desc: "Native support for SEPH and multi-rental.", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" },
             ].map((f, i) => (
-              <div key={i} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+              <div key={i} className="bg-slate-900 p-8 rounded-2xl border border-white/10 shadow-sm hover:shadow-md transition-all group">
                 <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 mb-6 group-hover:scale-110 transition-transform">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} /></svg>
                 </div>
-                <h3 className="text-xl font-bold text-slate-950 mb-3">{f.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{f.desc}</p>
+                <h3 className="text-xl font-bold text-white mb-3">{f.title}</h3>
+                <p className="text-slate-300 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -115,7 +115,7 @@ export default function Landing() {
       </section>
 
       {/* Security Focus */}
-      <section className="py-32 overflow-hidden">
+      <section className="py-32 overflow-hidden bg-black">
         <Container>
           <div className="bg-slate-950 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden">
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-[120px]" />
@@ -159,24 +159,24 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-slate-50 border-t border-slate-200">
+      <section className="py-24 bg-black border-t border-white/10">
         <Container>
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Support</h2>
-              <p className="text-4xl font-bold text-slate-950 tracking-tight">Frequently asked questions</p>
+              <p className="text-4xl font-bold text-white tracking-tight">Frequently asked questions</p>
             </div>
             <div className="space-y-4">
               {faqItems.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+                  className="bg-slate-900 rounded-2xl border border-white/10 overflow-hidden shadow-sm"
                 >
                   <button
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-slate-800 transition-colors"
                   >
-                    <span className="font-semibold text-slate-900">{item.question}</span>
+                    <span className="font-semibold text-white">{item.question}</span>
                     <svg
                       className={`w-5 h-5 text-slate-400 transition-transform ${
                         openFaqIndex === index ? 'rotate-180' : ''
@@ -190,7 +190,7 @@ export default function Landing() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-6 pb-5">
-                      <p className="text-slate-600 leading-relaxed">{item.answer}</p>
+                      <p className="text-slate-300 leading-relaxed">{item.answer}</p>
                     </div>
                   )}
                 </div>
@@ -201,14 +201,14 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white py-20 border-t border-slate-100">
+      <footer className="bg-black py-20 border-t border-white/10">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
               <Logo size="sm" />
-              <span className="font-bold text-slate-900 tracking-tight">BrokerOps</span>
+              <span className="font-bold text-white tracking-tight">BrokerOps</span>
             </div>
-            <p className="text-slate-500 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
+            <p className="text-slate-400 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
           </div>
         </Container>
       </footer>
