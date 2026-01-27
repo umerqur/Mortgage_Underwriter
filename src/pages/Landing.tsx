@@ -33,7 +33,7 @@ export default function Landing() {
   const mailtoLink = `mailto:${REQUEST_ACCESS_EMAIL}?subject=BrokerOps%20Access%20Request&body=Hi%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20BrokerOps.%0A%0AName%3A%0ABrokerage%3A%0ARole%3A%0A%0AThank%20you.`;
 
   return (
-    <div className="min-h-screen bg-white selection:bg-sky-100 selection:text-sky-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 selection:bg-sky-100 selection:text-sky-900">
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50">
         <Container>
@@ -64,8 +64,8 @@ export default function Landing() {
           />
         </div>
 
-        {/* White gradient overlay - strongest on left, fades to transparent on right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 via-40% to-transparent" />
+        {/* Gradient overlay - strongest on left, fades to transparent on right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-200 via-slate-200/90 via-40% to-transparent" />
 
         {/* Content */}
         <Container className="relative z-10 h-full">
@@ -90,7 +90,7 @@ export default function Landing() {
       </section>
 
       {/* Features Grid - "Bento Style" */}
-      <section className="py-24 bg-gradient-to-b from-slate-100 via-sky-50/50 to-slate-50 border-y border-slate-200">
+      <section className="py-24 bg-gradient-to-b from-slate-200 via-slate-300/70 to-slate-200 border-y border-slate-300">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Capabilities</h2>
@@ -115,7 +115,7 @@ export default function Landing() {
       </section>
 
       {/* Security Focus */}
-      <section className="py-32 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-sky-50/30">
+      <section className="py-32 overflow-hidden bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200">
         <Container>
           <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden border border-slate-200">
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-200/40 rounded-full blur-[120px]" />
@@ -159,7 +159,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-gradient-to-b from-sky-50/30 via-slate-50 to-white border-t border-slate-200">
+      <section className="py-24 bg-gradient-to-b from-slate-200 via-slate-300/50 to-slate-200 border-t border-slate-300">
         <Container>
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
@@ -201,7 +201,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-white to-slate-100 py-20 border-t border-slate-200">
+      <footer className="bg-gradient-to-b from-slate-200 to-slate-300 py-20 border-t border-slate-300">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
