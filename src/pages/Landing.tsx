@@ -90,11 +90,11 @@ export default function Landing() {
       </section>
 
       {/* Features Grid - "Bento Style" */}
-      <section className="py-24 bg-black border-y border-white/10">
+      <section className="py-24 bg-gradient-to-b from-slate-100 via-sky-50/50 to-slate-50 border-y border-slate-200">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Capabilities</h2>
-            <p className="text-4xl font-bold text-white tracking-tight">Everything you need to move faster.</p>
+            <p className="text-4xl font-bold text-slate-900 tracking-tight">Everything you need to move faster.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -102,12 +102,12 @@ export default function Landing() {
               { title: "Lender-Ready PDFs", desc: "Clean, professional exports in seconds.", icon: "M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
               { title: "Complex Income", desc: "Native support for SEPH and multi-rental.", icon: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" },
             ].map((f, i) => (
-              <div key={i} className="bg-slate-900 p-8 rounded-2xl border border-white/10 shadow-sm hover:shadow-md transition-all group">
+              <div key={i} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group">
                 <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 mb-6 group-hover:scale-110 transition-transform">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} /></svg>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{f.title}</h3>
-                <p className="text-slate-300 leading-relaxed">{f.desc}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{f.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -115,19 +115,19 @@ export default function Landing() {
       </section>
 
       {/* Security Focus */}
-      <section className="py-32 overflow-hidden bg-black">
+      <section className="py-32 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-sky-50/30">
         <Container>
-          <div className="bg-slate-950 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden">
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-[120px]" />
+          <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden border border-slate-200">
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-200/40 rounded-full blur-[120px]" />
             <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
               <div>
-                <h2 className="text-4xl font-bold text-white tracking-tight mb-6">Designed for brokerage privacy.</h2>
-                <p className="text-sky-100/70 text-lg mb-10">We prioritize internal control. No public registration, no exposed data, just a secure environment for your team.</p>
+                <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-6">Designed for brokerage privacy.</h2>
+                <p className="text-slate-600 text-lg mb-10">We prioritize internal control. No public registration, no exposed data, just a secure environment for your team.</p>
                 <div className="space-y-6">
                   {['Invite-only provisioning', 'Brokerage email allowlist', 'Zero public data exposure'].map((item) => (
-                    <div key={item} className="flex items-center gap-4 text-white font-medium">
-                      <div className="w-6 h-6 rounded-full bg-sky-500/20 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <div key={item} className="flex items-center gap-4 text-slate-800 font-medium">
+                      <div className="w-6 h-6 rounded-full bg-sky-100 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-sky-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                       </div>
                       {item}
                     </div>
@@ -135,21 +135,21 @@ export default function Landing() {
                 </div>
               </div>
               <div className="hidden lg:block">
-                <div className="p-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
-                  <div className="flex items-center gap-4 mb-8 pb-8 border-b border-white/10">
+                <div className="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <div className="flex items-center gap-4 mb-8 pb-8 border-b border-slate-200">
                     <div className="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center text-white">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </div>
                     <div>
-                      <p className="text-white font-bold">Admin Controlled</p>
-                      <p className="text-sky-300/60 text-sm">Security Policy Active</p>
+                      <p className="text-slate-900 font-bold">Admin Controlled</p>
+                      <p className="text-slate-500 text-sm">Security Policy Active</p>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full w-[85%] bg-sky-500" />
                     </div>
-                    <div className="h-2 w-2/3 bg-white/10 rounded-full" />
+                    <div className="h-2 w-2/3 bg-slate-100 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -159,24 +159,24 @@ export default function Landing() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-black border-t border-white/10">
+      <section className="py-24 bg-gradient-to-b from-sky-50/30 via-slate-50 to-white border-t border-slate-200">
         <Container>
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">Support</h2>
-              <p className="text-4xl font-bold text-white tracking-tight">Frequently asked questions</p>
+              <p className="text-4xl font-bold text-slate-900 tracking-tight">Frequently asked questions</p>
             </div>
             <div className="space-y-4">
               {faqItems.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-slate-900 rounded-2xl border border-white/10 overflow-hidden shadow-sm"
+                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
                 >
                   <button
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-slate-800 transition-colors"
+                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
                   >
-                    <span className="font-semibold text-white">{item.question}</span>
+                    <span className="font-semibold text-slate-900">{item.question}</span>
                     <svg
                       className={`w-5 h-5 text-slate-400 transition-transform ${
                         openFaqIndex === index ? 'rotate-180' : ''
@@ -190,7 +190,7 @@ export default function Landing() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-6 pb-5">
-                      <p className="text-slate-300 leading-relaxed">{item.answer}</p>
+                      <p className="text-slate-600 leading-relaxed">{item.answer}</p>
                     </div>
                   )}
                 </div>
@@ -201,14 +201,14 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black py-20 border-t border-white/10">
+      <footer className="bg-gradient-to-b from-white to-slate-100 py-20 border-t border-slate-200">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
               <Logo size="sm" />
-              <span className="font-bold text-white tracking-tight">BrokerOps</span>
+              <span className="font-bold text-slate-900 tracking-tight">BrokerOps</span>
             </div>
-            <p className="text-slate-400 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
+            <p className="text-slate-500 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
           </div>
         </Container>
       </footer>
