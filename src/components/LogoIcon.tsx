@@ -1,0 +1,42 @@
+export function LogoIcon({ size = 24 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect
+        x="7"
+        y="8"
+        width="18"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="2"
+        opacity="0.9"
+      />
+      <rect
+        x="10"
+        y="11"
+        width="18"
+        height="16"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="2"
+        opacity="0.6"
+      />
+      <rect
+        x="13"
+        y="14"
+        width="12"
+        height="10"
+        rx="2"
+        fill="currentColor"
+        opacity="0.25"
+      />
+    </svg>
+  )
+}
