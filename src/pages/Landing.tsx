@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container } from '../components/ui/Container';
 import { Button } from '../components/ui/Button';
+import { Logo } from '../components/Logo';
 
 const REQUEST_ACCESS_EMAIL = 'umer.qureshi@gmail.com';
-const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1724482606633-fa74fe4f5de1?q=80&w=1170&auto=format&fit=crop';
+const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1724482606633-fa74fe4f5de1?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
 // FAQ items
 const faqItems = [
@@ -36,19 +37,16 @@ export default function Landing() {
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50">
         <Container>
-          <div className="flex justify-between items-center h-24">
-            <div className="flex items-center gap-3 group cursor-default">
-              <div className="w-11 h-11 bg-slate-950 rounded-xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform">
-                <svg className="w-6 h-6 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">BrokerOps</span>
+          <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
+            <div className="flex items-center gap-2 sm:gap-3 group cursor-default">
+              <Logo size="sm" className="sm:hidden group-hover:scale-105 transition-transform" />
+              <Logo size="md" className="hidden sm:flex group-hover:scale-105 transition-transform" />
+              <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">BrokerOps</span>
             </div>
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-4 sm:gap-8">
               <a href={mailtoLink} className="hidden sm:block text-sm font-semibold text-slate-600 hover:text-sky-600 transition-colors">Request Access</a>
               <Link to="/login">
-                <Button variant="primary" className="py-2.5 px-5">Log in</Button>
+                <Button variant="primary" className="py-2 px-4 sm:py-2.5 sm:px-5 text-sm sm:text-base">Log in</Button>
               </Link>
             </div>
           </div>
@@ -56,37 +54,35 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        <Container className="relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-100 mb-8">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-sky-700">Internal Staff Platform</span>
-              </div>
-              <h1 className="text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-8">
+      <section className="relative min-h-[500px] sm:min-h-[600px] lg:min-h-[680px] overflow-hidden">
+        {/* Background image layer with washout effect */}
+        <div className="absolute inset-0">
+          <img
+            src={HERO_IMAGE_URL}
+            alt=""
+            className="w-full h-full object-cover blur-[2px] saturate-[0.85] contrast-[0.92] brightness-105"
+          />
+        </div>
+
+        {/* White gradient overlay - strongest on left, fades to transparent on right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 via-40% to-transparent" />
+
+        {/* Content */}
+        <Container className="relative z-10 h-full">
+          <div className="flex flex-col justify-center h-full pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-24">
+            <div className="max-w-xl lg:max-w-2xl">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 sm:mb-8">
                 Mortgage intake, <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-indigo-600">reimagined.</span>
               </h1>
-              <p className="text-xl text-slate-600 leading-relaxed mb-10 max-w-lg">
+              <p className="text-lg sm:text-xl text-slate-600 leading-relaxed mb-8 sm:mb-10 max-w-lg">
                 The modern underwriting companion. Standardize your packages and accelerate your CRM entry with precision.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button href={mailtoLink} className="h-14 px-8 text-base">Request Access Now</Button>
+                <Button href={mailtoLink} className="h-12 sm:h-14 px-6 sm:px-8 text-base">Request Access Now</Button>
                 <Link to="/login">
-                  <Button variant="secondary" className="h-14 px-8 text-base w-full">Member Sign in</Button>
+                  <Button variant="secondary" className="h-12 sm:h-14 px-6 sm:px-8 text-base w-full">Log in</Button>
                 </Link>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-tr from-sky-100 to-indigo-100 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-70 transition-opacity" />
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-slate-200 aspect-[4/3]">
-                <img src={HERO_IMAGE_URL} alt="Premium Interior" className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent" />
               </div>
             </div>
           </div>
@@ -208,10 +204,8 @@ export default function Landing() {
       <footer className="bg-white py-20 border-t border-slate-100">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Logo size="sm" />
               <span className="font-bold text-slate-900 tracking-tight">BrokerOps</span>
             </div>
             <p className="text-slate-500 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
