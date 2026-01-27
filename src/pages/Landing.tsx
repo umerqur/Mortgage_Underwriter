@@ -41,7 +41,7 @@ export default function Landing() {
             <div className="flex items-center gap-2 sm:gap-3 group cursor-default">
               <Logo size="sm" className="sm:hidden group-hover:scale-105 transition-transform" />
               <Logo size="md" className="hidden sm:flex group-hover:scale-105 transition-transform" />
-              <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">BrokerOps</span>
+              <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">BrokerOps</span>
             </div>
             <div className="flex items-center gap-4 sm:gap-8">
               <a href={mailtoLink} className="hidden sm:block text-sm font-semibold text-black hover:text-slate-600 transition-colors">Request Access</a>
@@ -206,7 +206,7 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
               <Logo size="sm" />
-              <span className="font-bold text-slate-900 tracking-tight">BrokerOps</span>
+              <span className="font-bold text-slate-900 tracking-tightest">BrokerOps</span>
             </div>
             <p className="text-slate-500 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
           </div>
