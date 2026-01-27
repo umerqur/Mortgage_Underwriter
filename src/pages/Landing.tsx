@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container } from '../components/ui/Container';
 import { Button } from '../components/ui/Button';
-import { Logo } from '../components/Logo';
+import { LogoIcon } from '../components/LogoIcon';
 
 const REQUEST_ACCESS_EMAIL = 'umer.qureshi@gmail.com';
 const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1724482606633-fa74fe4f5de1?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -39,8 +39,7 @@ export default function Landing() {
         <Container>
           <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
             <div className="flex items-center gap-2 sm:gap-3 group cursor-default">
-              <Logo size="sm" className="sm:hidden group-hover:scale-105 transition-transform" />
-              <Logo size="md" className="hidden sm:flex group-hover:scale-105 transition-transform" />
+              <LogoIcon size={28} />
               <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">BrokerOps</span>
             </div>
             <div className="flex items-center gap-4 sm:gap-8">
@@ -205,7 +204,7 @@ export default function Landing() {
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <Logo size="sm" />
+              <LogoIcon size={24} />
               <span className="font-bold text-slate-900 tracking-tightest">BrokerOps</span>
             </div>
             <p className="text-slate-500 text-sm">&copy; 2026 BrokerOps. Internal Use Only.</p>
