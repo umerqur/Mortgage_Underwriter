@@ -34,7 +34,7 @@ export default function Landing() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200 selection:bg-sky-100 selection:text-sky-900">
+    <div className="min-h-screen bg-gradient-to-b from-[#f8fbff] via-[#eef4fb] to-white selection:bg-sky-100 selection:text-sky-900">
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-50">
         <Container>
@@ -104,7 +104,7 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section className="py-24 bg-gradient-to-b from-slate-200 via-slate-300/70 to-slate-200 border-y border-slate-300">
+      <section className="py-24 border-y border-black/[0.04]">
         <Container>
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-sm font-bold text-sky-600 uppercase tracking-[0.2em] mb-4">
@@ -135,9 +135,9 @@ export default function Landing() {
             ].map((f, i) => (
               <div
                 key={i}
-                className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all group"
+                className="bg-white p-8 rounded-2xl border border-black/[0.06] shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 group"
               >
-                <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 mb-6">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={f.icon} />
                   </svg>
@@ -151,9 +151,9 @@ export default function Landing() {
       </section>
 
       {/* Security */}
-      <section className="py-32 overflow-hidden bg-gradient-to-b from-slate-200 via-slate-100 to-slate-200">
+      <section className="py-32 overflow-hidden">
         <Container>
-          <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden border border-slate-200">
+          <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-[3rem] p-12 lg:p-24 relative overflow-hidden border border-black/[0.06] shadow-lg">
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-sky-200/40 rounded-full blur-[120px]" />
             <div className="relative z-10 grid lg:grid-cols-2 gap-16 items-center">
               <div>
@@ -184,8 +184,8 @@ export default function Landing() {
               </div>
 
               <div className="hidden lg:block">
-                <div className="p-8 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                  <div className="flex items-center gap-4 mb-8 pb-8 border-b border-slate-200">
+                <div className="p-8 bg-white border border-black/[0.06] rounded-2xl shadow-lg">
+                  <div className="flex items-center gap-4 mb-8 pb-8 border-b border-black/[0.06]">
                     <div className="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center text-white">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -215,7 +215,7 @@ export default function Landing() {
       </section>
 
       {/* FAQ */}
-      <section className="py-24 bg-gradient-to-b from-slate-200 via-slate-300/50 to-slate-200 border-t border-slate-300">
+      <section className="py-24 border-t border-black/[0.04]">
         <Container>
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-16">
@@ -229,10 +229,10 @@ export default function Landing() {
 
             <div className="space-y-4">
               {faqItems.map((item, index) => (
-                <div key={index} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div key={index} className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden shadow-lg">
                   <button
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+                    className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-sky-50/50 transition-colors"
                   >
                     <span className="font-semibold text-slate-900">{item.question}</span>
                     <svg
@@ -260,7 +260,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-slate-200 to-slate-300 py-20 border-t border-slate-300">
+      <footer className="py-20 border-t border-black/[0.04]">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
