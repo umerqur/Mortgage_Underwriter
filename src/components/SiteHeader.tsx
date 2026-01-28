@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react'
 import { BrandBlock } from './BrandBlock';
 import { Container } from './ui/Container';
 
