@@ -3,19 +3,19 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate that the anon key is in the correct format (JWT starting with eyJ)
-// Keys starting with sb_publishable are Stripe keys, not Supabase keys
+// Validate that the anon key is in a valid format:
+// - Legacy JWT format starting with "eyJ"
+// - New publishable key format starting with "sb_publishable_"
 function validateSupabaseConfig(): string | null {
   if (!supabaseUrl || !supabaseAnonKey) {
     return 'Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.';
   }
 
-  if (supabaseAnonKey.startsWith('sb_publishable')) {
-    return 'Invalid VITE_SUPABASE_ANON_KEY: You are using a Stripe publishable key instead of the Supabase anon public key. The Supabase anon key should start with "eyJ..." and can be found in Supabase Dashboard > Project Settings > API > anon public.';
-  }
+  const isLegacyJwt = supabaseAnonKey.startsWith('eyJ');
+  const isPublishableKey = supabaseAnonKey.startsWith('sb_publishable_');
 
-  if (!supabaseAnonKey.startsWith('eyJ')) {
-    return 'Invalid VITE_SUPABASE_ANON_KEY: The Supabase anon public key should be a JWT starting with "eyJ...". Find it in Supabase Dashboard > Project Settings > API > anon public.';
+  if (!isLegacyJwt && !isPublishableKey) {
+    return 'Invalid Supabase public key. Use either the legacy anon key starting with "eyJ" or the publishable key starting with "sb_publishable_". Check Supabase Dashboard > Project Settings > API Keys.';
   }
 
   return null;
