@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
-import { LogoIcon } from './LogoIcon';
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -19,7 +18,7 @@ export default function TopBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2 text-slate-900">
-            <LogoIcon size={24} />
+            <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-7 w-auto" />
             <span className="font-semibold tracking-tight">
               BrokerOps
             </span>

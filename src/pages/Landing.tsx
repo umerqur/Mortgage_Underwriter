@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Container } from '../components/ui/Container'
 import { Button } from '../components/ui/Button'
-import { LogoIcon } from '../components/LogoIcon'
 
 const HERO_IMAGE_URL =
   'https://images.unsplash.com/photo-1558224752-394621ba6925?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
@@ -40,7 +39,7 @@ export default function Landing() {
         <Container>
           <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
             <div className="flex items-center gap-2 sm:gap-3 cursor-default">
-              <LogoIcon size={28} />
+              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-7 sm:h-8 w-auto" />
               <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">
                 BrokerOps
               </span>
@@ -264,7 +263,7 @@ export default function Landing() {
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-2 sm:gap-3">
-              <LogoIcon size={24} />
+              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-7 w-auto" />
               <span className="font-bold text-slate-900 tracking-tightest">BrokerOps</span>
             </div>
             <p className="text-slate-500 text-sm">© 2026 BrokerOps. Internal use only.</p>
