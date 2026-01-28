@@ -8,13 +8,17 @@ interface BrandBlockProps {
 }
 
 export function BrandBlock({ linkTo, size = 'default' }: BrandBlockProps) {
-  const logoClass = size === 'header'
-    ? 'h-[27rem] sm:h-[30rem] lg:h-[33rem] w-auto'
-    : 'h-16 sm:h-20 w-auto';
+  const logoClass =
+    size === 'header'
+      ? 'h-16 sm:h-18 lg:h-20 w-auto'
+      : 'h-10 sm:h-12 w-auto';
 
-  const wordmarkClass = size === 'header'
-    ? 'text-4xl sm:text-5xl font-bold tracking-tight text-slate-900'
-    : 'text-xl sm:text-2xl font-bold tracking-tight text-slate-900';
+  const wordmarkClass =
+    size === 'header'
+      ? 'text-2xl sm:text-3xl font-bold tracking-tight text-slate-900'
+      : 'text-lg sm:text-xl font-bold tracking-tight text-slate-900';
+
+  const gap = size === 'header' ? 'gap-3' : 'gap-3';
 
   const content = (
     <>
@@ -31,14 +35,14 @@ export function BrandBlock({ linkTo, size = 'default' }: BrandBlockProps) {
 
   if (linkTo) {
     return (
-      <Link to={linkTo} className="flex items-center gap-4">
+      <Link to={linkTo} className={`flex items-center ${gap}`}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className={`flex items-center ${gap}`}>
       {content}
     </div>
   );
