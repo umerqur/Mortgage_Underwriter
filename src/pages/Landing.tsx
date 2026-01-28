@@ -45,7 +45,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative min-h-[500px] sm:min-h-[600px] lg:min-h-[680px] overflow-hidden">
         <Container className="relative h-full">
-          <div className="flex flex-col justify-center h-full pt-40 sm:pt-44 lg:pt-48 pb-16 sm:pb-20 lg:pb-24">
+          <div className="flex flex-col justify-center h-full pt-48 sm:pt-52 lg:pt-56 pb-16 sm:pb-20 lg:pb-24">
             <div className="max-w-xl lg:max-w-2xl">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 sm:mb-8">
                 Mortgage intake, <br />
