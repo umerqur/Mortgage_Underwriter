@@ -70,7 +70,7 @@ export default function Landing() {
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-200 via-slate-200/90 via-40% to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/[0.92] via-[65%] to-transparent" />
 
         <Container className="relative z-10 h-full">
           <div className="flex flex-col justify-center h-full pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-24">
