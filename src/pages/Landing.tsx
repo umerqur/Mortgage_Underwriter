@@ -42,8 +42,7 @@ export default function Landing() {
               <LogoIcon size={28} />
               <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">BrokerOps</span>
             </div>
-            <div className="flex items-center gap-4 sm:gap-8">
-              <a href={mailtoLink} className="hidden sm:block text-sm font-semibold text-black hover:text-slate-600 transition-colors">Request Access</a>
+            <div className="flex items-center">
               <Link to="/login">
                 <Button variant="primary" className="py-2 px-4 sm:py-2.5 sm:px-5 text-sm sm:text-base">Log in</Button>
               </Link>
@@ -78,7 +77,7 @@ export default function Landing() {
                 The modern underwriting companion. Standardize your packages and accelerate your CRM entry with precision.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button href={mailtoLink} className="h-12 sm:h-14 px-6 sm:px-8 text-base">Request Access Now</Button>
+                <Button variant="secondary" className="h-12 sm:h-14 px-6 sm:px-8 text-base w-full">Log in</Button>
                 <Link to="/login">
                   <Button variant="secondary" className="h-12 sm:h-14 px-6 sm:px-8 text-base w-full">Log in</Button>
                 </Link>
