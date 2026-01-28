@@ -87,6 +87,11 @@ export default function Landing() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
+                <Link to="/request-access">
+                  <Button variant="primary" className="h-12 sm:h-14 px-6 sm:px-8 text-base">
+                    Request Access
+                  </Button>
+                </Link>
                 <Link to="/login">
                   <Button variant="secondary" className="h-12 sm:h-14 px-6 sm:px-8 text-base">
                     Log in
