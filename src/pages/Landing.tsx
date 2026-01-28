@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { LogoIcon } from '../components/LogoIcon';
 
 const REQUEST_ACCESS_EMAIL = 'umer.qureshi@gmail.com';
-const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1724482606633-fa74fe4f5de1?q=80&w=2400&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const HERO_IMAGE_URL = 'https://images.unsplash.com/photo-1558224752-394621ba6925?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
 // FAQ items
 const faqItems = [
