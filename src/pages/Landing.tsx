@@ -82,9 +82,8 @@ export default function Landing() {
                 </span>
               </h1>
 
-              <p className="text-lg sm:text-xl text-slate-600 leading-relaxed mb-8 sm:mb-10 max-w-lg">
-                The modern underwriting companion. Standardize packages and speed up application entry with fewer
-                back and forths.
+              <p className="text-lg sm:text-xl text-[#000000] leading-relaxed mb-8 sm:mb-10 max-w-lg">
+                The modern underwriting companion. Standardize your packages and accelerate your CRM entry with precision.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
