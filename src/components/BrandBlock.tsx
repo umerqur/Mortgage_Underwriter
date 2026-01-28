@@ -3,17 +3,34 @@ import { Link } from 'react-router-dom';
 interface BrandBlockProps {
   /** Path to link to. If omitted or empty string, renders as a non-clickable div */
   linkTo?: string;
+  /** Size variant: "header" for huge branding, "footer" for smaller */
+  size?: 'header' | 'footer';
 }
 
-export function BrandBlock({ linkTo }: BrandBlockProps) {
+const sizeConfig = {
+  header: {
+    logo: 'h-20 sm:h-24 lg:h-28 w-auto',
+    wordmark: 'text-2xl sm:text-3xl font-bold tracking-tight text-slate-900',
+    gap: 'gap-5',
+  },
+  footer: {
+    logo: 'h-10 sm:h-12 w-auto',
+    wordmark: 'text-lg sm:text-xl font-bold tracking-tight text-slate-900',
+    gap: 'gap-3',
+  },
+};
+
+export function BrandBlock({ linkTo, size = 'header' }: BrandBlockProps) {
+  const config = sizeConfig[size];
+
   const content = (
     <>
       <img
         src="/BrokerOps_Logo.png"
         alt="BrokerOps"
-        className="h-16 sm:h-20 w-auto"
+        className={config.logo}
       />
-      <span className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+      <span className={config.wordmark}>
         BrokerOps
       </span>
     </>
@@ -21,14 +38,14 @@ export function BrandBlock({ linkTo }: BrandBlockProps) {
 
   if (linkTo) {
     return (
-      <Link to={linkTo} className="flex items-center gap-4">
+      <Link to={linkTo} className={`flex items-center ${config.gap}`}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className={`flex items-center ${config.gap}`}>
       {content}
     </div>
   );

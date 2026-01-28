@@ -50,7 +50,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative min-h-[500px] sm:min-h-[600px] lg:min-h-[680px] overflow-hidden">
         <Container className="relative h-full">
-          <div className="flex flex-col justify-center h-full pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-24">
+          <div className="flex flex-col justify-center h-full pt-32 sm:pt-36 lg:pt-40 pb-16 sm:pb-20 lg:pb-24">
             <div className="max-w-xl lg:max-w-2xl">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 sm:mb-8">
                 Mortgage intake, <br />
@@ -240,7 +240,7 @@ export default function Landing() {
       <footer className="py-20 border-t border-black/[0.04]">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <BrandBlock />
+            <BrandBlock size="footer" />
             <p className="text-slate-500 text-sm">© 2026 BrokerOps. Internal use only.</p>
           </div>
         </Container>
