@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
+import { BrandBlock } from './BrandBlock';
+import { Container } from './ui/Container';
 
 export default function TopBar() {
   const navigate = useNavigate();
@@ -15,14 +17,9 @@ export default function TopBar() {
 
   return (
     <header className="bg-white border-b border-slate-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Container>
         <div className="flex justify-between items-center py-4">
-          <div className="flex items-center gap-2 text-slate-900">
-            <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-12 w-auto" />
-            <span className="font-semibold tracking-tight">
-              BrokerOps
-            </span>
-          </div>
+          <BrandBlock linkTo="" />
 
           <div className="flex items-center gap-4">
             {user && (
@@ -51,7 +48,7 @@ export default function TopBar() {
             </button>
           </div>
         </div>
-      </div>
+      </Container>
     </header>
   );
 }
