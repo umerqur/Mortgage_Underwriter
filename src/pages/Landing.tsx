@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Container } from '../components/ui/Container'
 import { Button } from '../components/ui/Button'
 import { BrandBlock } from '../components/BrandBlock'
+import { SiteHeader } from '../components/SiteHeader'
 
 const faqItems = [
   {
@@ -27,30 +28,24 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f8fbff] via-[#eef4fb] to-white selection:bg-sky-100 selection:text-sky-900">
-      {/* Nav */}
-      <nav className="absolute top-0 left-0 right-0 z-50">
-        <Container>
-          <div className="flex justify-between items-center py-4">
-            <BrandBlock />
-
-            <div className="flex items-center">
-              <Link to="/login">
-                <Button
-                  variant="primary"
-                  className="py-2 px-4 sm:py-2.5 sm:px-5 text-sm sm:text-base"
-                >
-                  Log in
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </Container>
-      </nav>
+      <SiteHeader
+        variant="overlay"
+        rightSlot={
+          <Link to="/login">
+            <Button
+              variant="primary"
+              className="py-2 px-4 sm:py-2.5 sm:px-5 text-sm sm:text-base"
+            >
+              Log in
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Hero */}
       <section className="relative min-h-[500px] sm:min-h-[600px] lg:min-h-[680px] overflow-hidden">
         <Container className="relative h-full">
-          <div className="flex flex-col justify-center h-full pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-24">
+          <div className="flex flex-col justify-center h-full pt-40 sm:pt-44 lg:pt-48 pb-16 sm:pb-20 lg:pb-24">
             <div className="max-w-xl lg:max-w-2xl">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 sm:mb-8">
                 Mortgage intake, <br />

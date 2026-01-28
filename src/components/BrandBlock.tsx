@@ -3,17 +3,27 @@ import { Link } from 'react-router-dom';
 interface BrandBlockProps {
   /** Path to link to. If omitted or empty string, renders as a non-clickable div */
   linkTo?: string;
+  /** Size variant: 'default' for footer, 'header' for site headers (huge) */
+  size?: 'default' | 'header';
 }
 
-export function BrandBlock({ linkTo }: BrandBlockProps) {
+export function BrandBlock({ linkTo, size = 'default' }: BrandBlockProps) {
+  const logoClass = size === 'header'
+    ? 'h-24 sm:h-28 lg:h-32 w-auto'
+    : 'h-16 sm:h-20 w-auto';
+
+  const wordmarkClass = size === 'header'
+    ? 'text-3xl sm:text-4xl font-bold tracking-tight text-slate-900'
+    : 'text-xl sm:text-2xl font-bold tracking-tight text-slate-900';
+
   const content = (
     <>
       <img
         src="/BrokerOps_Logo.png"
         alt="BrokerOps"
-        className="h-16 sm:h-20 w-auto"
+        className={logoClass}
       />
-      <span className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+      <span className={wordmarkClass}>
         BrokerOps
       </span>
     </>
