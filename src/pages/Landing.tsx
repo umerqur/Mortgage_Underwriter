@@ -31,7 +31,7 @@ export default function Landing() {
         <Container>
           <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
             <div className="flex items-center gap-2 sm:gap-3 cursor-default">
-              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-10 sm:h-11 w-auto" />
+              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-20 sm:h-24 lg:h-28 w-auto" />
               <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">
                 BrokerOps
               </span>
