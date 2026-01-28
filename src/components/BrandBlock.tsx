@@ -9,7 +9,7 @@ interface BrandBlockProps {
 
 export function BrandBlock({ linkTo, size = 'default' }: BrandBlockProps) {
   const logoClass = size === 'header'
-    ? 'h-36 sm:h-40 lg:h-44 w-auto'
+    ? 'h-[27rem] sm:h-[30rem] lg:h-[33rem] w-auto'
     : 'h-16 sm:h-20 w-auto';
 
   const wordmarkClass = size === 'header'
