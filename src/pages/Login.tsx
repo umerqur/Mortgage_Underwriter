@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase, isEmailAllowed } from '../lib/supabaseClient';
-import { BrandBlock } from '../components/BrandBlock';
-import { Container } from '../components/ui/Container';
+import { SiteHeader } from '../components/SiteHeader';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -57,13 +56,7 @@ export default function Login() {
   if (configError) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
-        <header className="bg-white border-b border-slate-200">
-          <Container>
-            <div className="flex justify-between items-center py-4">
-              <BrandBlock linkTo="/" />
-            </div>
-          </Container>
-        </header>
+        <SiteHeader variant="solid" />
 
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="max-w-md w-full">
@@ -101,14 +94,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <Container>
-          <div className="flex justify-between items-center py-4">
-            <BrandBlock linkTo="/" />
-          </div>
-        </Container>
-      </header>
+      <SiteHeader variant="solid" />
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center px-4">
