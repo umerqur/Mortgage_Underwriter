@@ -29,9 +29,9 @@ export default function Landing() {
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-50">
         <Container>
-          <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
-            <div className="flex items-center gap-2 sm:gap-3 cursor-default">
-              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-10 sm:h-11 w-auto" />
+          <div className="flex justify-between items-center h-24 sm:h-28 lg:h-32">
+            <div className="flex items-center gap-4 sm:gap-5 cursor-default">
+              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-16 sm:h-20 lg:h-24 w-auto" />
               <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">
                 BrokerOps
               </span>
