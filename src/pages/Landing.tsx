@@ -3,9 +3,6 @@ import { Link } from 'react-router-dom'
 import { Container } from '../components/ui/Container'
 import { Button } from '../components/ui/Button'
 
-const HERO_IMAGE_URL =
-  'https://images.unsplash.com/photo-1558224752-394621ba6925?q=80&w=1114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-
 const faqItems = [
   {
     question: 'Who can access this tool?',
@@ -56,17 +53,7 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative min-h-[500px] sm:min-h-[600px] lg:min-h-[680px] overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={HERO_IMAGE_URL}
-            alt=""
-            className="w-full h-full object-cover blur-[2px] saturate-[0.85] contrast-[0.92] brightness-105"
-          />
-        </div>
-
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.85)_0%,rgba(255,255,255,0.65)_35%,transparent_50%)]" />
-
-        <Container className="relative z-10 h-full">
+        <Container className="relative h-full">
           <div className="flex flex-col justify-center h-full pt-24 sm:pt-28 lg:pt-32 pb-16 sm:pb-20 lg:pb-24">
             <div className="max-w-xl lg:max-w-2xl">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-950 leading-[1.1] tracking-tight mb-6 sm:mb-8">
