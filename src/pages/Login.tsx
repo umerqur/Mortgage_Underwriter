@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase, isEmailAllowed } from '../lib/supabaseClient';
+import { BrandBlock } from '../components/BrandBlock';
+import { Container } from '../components/ui/Container';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -56,30 +58,11 @@ export default function Login() {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <header className="bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link to="/" className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <span className="font-semibold text-slate-900">
-                  Mortgage Agent Intake
-                </span>
-              </Link>
+          <Container>
+            <div className="flex justify-between items-center py-4">
+              <BrandBlock linkTo="/" />
             </div>
-          </div>
+          </Container>
         </header>
 
         <main className="flex-1 flex items-center justify-center px-4">
@@ -120,30 +103,11 @@ export default function Login() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <span className="font-semibold text-slate-900">
-                Mortgage Agent Intake
-              </span>
-            </Link>
+        <Container>
+          <div className="flex justify-between items-center py-4">
+            <BrandBlock linkTo="/" />
           </div>
-        </div>
+        </Container>
       </header>
 
       {/* Main content */}

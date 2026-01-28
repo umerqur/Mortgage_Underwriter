@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Container } from '../components/ui/Container'
 import { Button } from '../components/ui/Button'
+import { BrandBlock } from '../components/BrandBlock'
 
 const faqItems = [
   {
@@ -29,13 +30,8 @@ export default function Landing() {
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-50">
         <Container>
-          <div className="flex justify-between items-center h-16 sm:h-20 lg:h-24">
-            <div className="flex items-center gap-2 sm:gap-3 cursor-default">
-              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-20 sm:h-24 lg:h-28 w-auto" />
-              <span className="text-lg sm:text-xl font-bold tracking-tightest text-slate-900">
-                BrokerOps
-              </span>
-            </div>
+          <div className="flex justify-between items-center py-4">
+            <BrandBlock />
 
             <div className="flex items-center">
               <Link to="/login">
@@ -244,10 +240,7 @@ export default function Landing() {
       <footer className="py-20 border-t border-black/[0.04]">
         <Container>
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <img src="/BrokerOps_Logo.png" alt="BrokerOps" className="h-9 w-auto" />
-              <span className="font-bold text-slate-900 tracking-tightest">BrokerOps</span>
-            </div>
+            <BrandBlock />
             <p className="text-slate-500 text-sm">© 2026 BrokerOps. Internal use only.</p>
           </div>
         </Container>
