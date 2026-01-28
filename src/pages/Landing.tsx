@@ -22,11 +22,6 @@ const faqItems = [
     answer:
       'No customer data is stored or displayed publicly. This tool is used internally to generate document checklists. All sensitive information is handled according to internal security policies.',
   },
-  {
-    question: 'What browsers are supported?',
-    answer:
-      'Works best on modern browsers including Chrome, Firefox, Safari, and Edge. Keep your browser updated for best results.',
-  },
 ]
 
 export default function Landing() {
