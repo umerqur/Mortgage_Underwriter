@@ -10,7 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
 
   useEffect(() => {
     // If already logged in with allowed email, redirect to app
@@ -45,7 +45,7 @@ export default function Login() {
       return;
     }
 
-    setMagicLinkSent(true);
+    setLinkSent(true);
     setSubmitting(false);
   };
 
@@ -82,13 +82,13 @@ export default function Login() {
               </p>
             </div>
 
-            {magicLinkSent ? (
+            {linkSent ? (
               <div className="text-center">
                 <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm mb-4">
-                  Check your email for a magic link to sign in.
+                  Check your email for a secure sign in link.
                 </div>
                 <button
-                  onClick={() => setMagicLinkSent(false)}
+                  onClick={() => setLinkSent(false)}
                   className="text-sm text-sky-600 hover:text-sky-700"
                 >
                   Try a different email
@@ -122,8 +122,11 @@ export default function Login() {
                   disabled={submitting}
                   className="w-full inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 rounded-lg shadow-sm transition-colors"
                 >
-                  {submitting ? 'Sending link...' : 'Send magic link'}
+                  {submitting ? 'Sending link...' : 'Sign in'}
                 </button>
+                <p className="text-sm text-slate-500 text-center mt-2">
+                  We will email you a secure sign in link.
+                </p>
               </form>
             )}
 
