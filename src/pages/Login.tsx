@@ -36,6 +36,7 @@ export default function Login() {
       email: normalizedEmail,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldCreateUser: false,
       },
     });
 
