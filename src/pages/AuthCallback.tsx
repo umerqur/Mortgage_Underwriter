@@ -8,15 +8,11 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handleCallback() {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get('code');
-
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-          setError(exchangeError.message);
-          return;
-        }
+      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      if (exchangeError) {
+        console.log('Auth callback error:', exchangeError.message);
+        setError(exchangeError.message);
+        return;
       }
 
       navigate('/app', { replace: true });
