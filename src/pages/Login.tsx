@@ -8,9 +8,9 @@ export default function Login() {
   const navigate = useNavigate();
   const { session, loading, configError } = useAuth();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   useEffect(() => {
     // If already logged in with allowed email, redirect to app
@@ -30,26 +30,29 @@ export default function Login() {
       return;
     }
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!isEmailAllowed(normalizedEmail)) {
+      setError('Access denied');
+      setSubmitting(false);
+      return;
+    }
+
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: normalizedEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
-    if (signInError) {
-      setError(signInError.message);
+    if (otpError) {
+      setError(otpError.message);
       setSubmitting(false);
       return;
     }
 
-    // Check if email is allowed
-    if (!isEmailAllowed(data.user?.email)) {
-      await supabase.auth.signOut();
-      setError('Access restricted');
-      setSubmitting(false);
-      return;
-    }
-
-    navigate('/app');
+    setMagicLinkSent(true);
+    setSubmitting(false);
   };
 
   // Show config error if Supabase is not configured
@@ -112,7 +115,7 @@ export default function Login() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
               </div>
@@ -125,51 +128,50 @@ export default function Login() {
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                  {error}
+            {magicLinkSent ? (
+              <div className="text-center">
+                <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm mb-4">
+                  Check your email for a magic link to sign in.
                 </div>
-              )}
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                  placeholder="you@example.com"
-                />
+                <button
+                  onClick={() => setMagicLinkSent(false)}
+                  className="text-sm text-sky-600 hover:text-sky-700"
+                >
+                  Try a different email
+                </button>
               </div>
+            ) : (
+              <form onSubmit={handleLogin} className="space-y-4">
+                {error && (
+                  <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                    {error}
+                  </div>
+                )}
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                  placeholder="••••••••"
-                />
-              </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    placeholder="you@example.com"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 rounded-lg shadow-sm transition-colors"
-              >
-                {submitting ? 'Logging in...' : 'Log in'}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-400 rounded-lg shadow-sm transition-colors"
+                >
+                  {submitting ? 'Sending link...' : 'Send magic link'}
+                </button>
+              </form>
+            )}
 
             <p className="mt-6 text-sm text-slate-500 text-center">
               <Link to="/" className="text-sky-600 hover:text-sky-700">
