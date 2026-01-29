@@ -22,7 +22,7 @@ These environment variables are required for authentication:
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_SUPABASE_URL` | Your Supabase project URL (e.g., `https://knqeeylsvurtgdjkszhu.supabase.co`) |
+| `VITE_SUPABASE_URL` | Your Supabase project URL (e.g., `https://kgneeylsvurtgdjkshzu.supabase.co`) |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase **anon public** key (starts with `eyJ...`) |
 
 **Finding your Supabase anon key:**

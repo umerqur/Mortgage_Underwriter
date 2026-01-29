@@ -9,6 +9,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+if (!supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
+  throw new Error(
+    'Invalid Supabase URL. It must start with https:// and include .supabase.co.'
+  );
+}
+
 // Validate key format: legacy JWT (eyJ…) or new publishable key (sb_publishable_…)
 const isLegacyJwt = supabaseAnonKey.startsWith('eyJ');
 const isPublishableKey = supabaseAnonKey.startsWith('sb_publishable_');
