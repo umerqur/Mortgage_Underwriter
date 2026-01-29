@@ -8,9 +8,7 @@ export default function TopBar() {
   const { user } = useAuth();
 
   const handleLogout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    await supabase.auth.signOut();
     navigate('/');
   };
 

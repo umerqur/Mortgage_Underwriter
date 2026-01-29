@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { session, loading, configError } = useAuth();
+  const { session, loading } = useAuth();
 
   if (loading) {
     return (
@@ -14,10 +14,6 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         <div className="text-slate-600">Loading...</div>
       </div>
     );
-  }
-
-  if (configError) {
-    return <Navigate to="/login" replace />;
   }
 
   if (!session) {

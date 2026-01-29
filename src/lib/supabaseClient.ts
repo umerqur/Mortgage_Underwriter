@@ -3,30 +3,23 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate that the anon key is in a valid format:
-// - Legacy JWT format starting with "eyJ"
-// - New publishable key format starting with "sb_publishable_"
-function validateSupabaseConfig(): string | null {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return 'Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.';
-  }
-
-  const isLegacyJwt = supabaseAnonKey.startsWith('eyJ');
-  const isPublishableKey = supabaseAnonKey.startsWith('sb_publishable_');
-
-  if (!isLegacyJwt && !isPublishableKey) {
-    return 'Invalid Supabase public key. Use either the legacy anon key starting with "eyJ" or the publishable key starting with "sb_publishable_". Check Supabase Dashboard > Project Settings > API Keys.';
-  }
-
-  return null;
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase env vars: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+  );
 }
 
-export const supabaseConfigError = validateSupabaseConfig();
+// Validate key format: legacy JWT (eyJ…) or new publishable key (sb_publishable_…)
+const isLegacyJwt = supabaseAnonKey.startsWith('eyJ');
+const isPublishableKey = supabaseAnonKey.startsWith('sb_publishable_');
 
-export const supabase =
-  supabaseUrl && supabaseAnonKey
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
+if (!isLegacyJwt && !isPublishableKey) {
+  throw new Error(
+    'Invalid VITE_SUPABASE_ANON_KEY format. Expected legacy JWT (eyJ…) or publishable key (sb_publishable_…). Check Supabase Dashboard > Project Settings > API Keys.'
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const ALLOWED_EMAILS = [
   'umer.qureshi@gmail.com',

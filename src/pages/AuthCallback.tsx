@@ -8,11 +8,6 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handleCallback() {
-      if (!supabase) {
-        setError('Supabase not configured');
-        return;
-      }
-
       const url = new URL(window.location.href);
       const code = url.searchParams.get('code');
 

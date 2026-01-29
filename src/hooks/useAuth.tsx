@@ -6,20 +6,18 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { supabase, supabaseConfigError } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  configError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   loading: true,
-  configError: null,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -27,11 +25,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -54,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user: session?.user ?? null,
         loading,
-        configError: supabaseConfigError,
       }}
     >
       {children}
