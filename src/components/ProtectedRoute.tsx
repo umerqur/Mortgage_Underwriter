@@ -7,6 +7,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { session, loading } = useAuth();
+  const isCallback = window.location.pathname.startsWith('/auth/callback');
 
   if (loading) {
     return (
@@ -16,7 +17,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!session) {
+  if (!session && !isCallback) {
     return <Navigate to="/login" replace />;
   }
 
