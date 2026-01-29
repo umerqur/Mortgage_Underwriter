@@ -35,5 +35,5 @@ export const ALLOWED_EMAILS = [
 
 export function isEmailAllowed(email: string | undefined): boolean {
   if (!email) return false;
-  return ALLOWED_EMAILS.includes(email.toLowerCase());
+  return ALLOWED_EMAILS.includes(email.trim().toLowerCase());
 }
