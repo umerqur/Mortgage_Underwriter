@@ -218,8 +218,18 @@ export default function DocsIntake() {
       errors.push('Please select at least one other income type');
     }
 
+    // Validate down payment sources for purchase transactions
+    if (isPurchase && formData.downPaymentSources.length === 0) {
+      errors.push('Please select at least one down payment source');
+    }
+
+    // Validate other properties question is answered
+    if (formData.hasOtherProperties === null) {
+      errors.push('Please indicate if you own other properties');
+    }
+
     return errors;
-  }, [formData, isSelfEmployed, isOtherIncome]);
+  }, [formData, isSelfEmployed, isOtherIncome, isPurchase]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,7 +379,8 @@ export default function DocsIntake() {
         for (const docId of prev) {
           if (
             docId.startsWith('doc_other_property_mortgage_statement_') ||
-            docId.startsWith('doc_other_property_tax_statement_')
+            docId.startsWith('doc_other_property_tax_statement_') ||
+            docId.startsWith('doc_other_property_heating_costs_')
           ) {
             next.delete(docId);
           }
@@ -575,7 +586,7 @@ export default function DocsIntake() {
           {isPurchase && (
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <label className="block text-sm font-semibold text-slate-900">
-                Down Payment Sources
+                Down Payment Sources <span className="text-red-500">*</span>
               </label>
               <p className="mt-1 text-sm text-slate-500">
                 Where is your down payment coming from? (Select all that apply)
@@ -624,6 +635,11 @@ export default function DocsIntake() {
                     className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
+              )}
+              {validationErrors.includes('Please select at least one down payment source') && (
+                <p className="mt-3 text-sm text-red-600">
+                  Please select at least one down payment source
+                </p>
               )}
             </div>
           )}
@@ -717,7 +733,7 @@ export default function DocsIntake() {
           {/* Other Properties */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <label className="block text-sm font-semibold text-slate-900">
-              Do you own other properties?
+              Do you own other properties? <span className="text-red-500">*</span>
             </label>
             <p className="mt-1 text-sm text-slate-500">
               Properties beyond the one involved in this transaction
@@ -756,6 +772,11 @@ export default function DocsIntake() {
                 </label>
               ))}
             </div>
+            {validationErrors.includes('Please indicate if you own other properties') && (
+              <p className="mt-3 text-sm text-red-600">
+                Please indicate if you own other properties
+              </p>
+            )}
           </div>
 
           {/* Number of Other Properties - Only show if hasOtherProperties is true */}
