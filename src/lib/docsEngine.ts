@@ -18,7 +18,8 @@ import {
 
 /**
  * Generates per-property documents at runtime based on the number of other properties.
- * Creates 2 documents per property: Mortgage Statement and Property Tax Statement.
+ * Creates 5 documents per property: Mortgage Statement, Property Tax Statement,
+ * Heating Costs, Legal Description, and Condo Fee Statement.
  */
 function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
   const docs: Document[] = [];
@@ -32,6 +33,21 @@ function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
     docs.push({
       id: `doc_other_property_tax_statement_${i}`,
       name: `Property Tax Statement (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_heating_costs_${i}`,
+      name: `Heating Costs Document (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_legal_description_${i}`,
+      name: `Legal Description (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_condo_fee_${i}`,
+      name: `Condo Fee Statement (Other Property ${i})`,
       category: 'existing_properties',
     });
   }
@@ -144,26 +160,35 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // ==========================================================================
 
   if (isPurchase) {
-    // Down payment bank statement - include if any non-gift source selected
-    const needsDownPaymentStatement = answers.downPaymentSources.some(
-      (source) =>
-        source === 'savings' ||
-        source === 'sale_of_property' ||
-        source === 'rrsp_hbp' ||
-        source === 'other'
-    );
+    const isResale = answers.transactionType === 'purchase_resale';
 
-    if (needsDownPaymentStatement) {
-      if (answers.transactionType === 'purchase_resale') {
-        addDoc('doc_dp_90day');
-      } else if (answers.transactionType === 'purchase_new') {
-        addDoc('doc_dp_bank_stmt');
-      }
+    // Savings / Investment - 90-day bank statement (resale) or bank statement (new)
+    if (answers.downPaymentSources.includes('savings')) {
+      addDoc(isResale ? 'doc_dp_90day' : 'doc_dp_bank_stmt');
     }
 
-    // Gift Letter - include only if gift is selected
+    // Sale of existing property - agreement of sale, mortgage stmt, insurance, tax bill
+    if (answers.downPaymentSources.includes('sale_of_property')) {
+      addDoc('doc_dp_sale_agreement');
+      addDoc('doc_dp_existing_mortgage_statement');
+      addDoc('doc_dp_insurance_policy');
+      addDoc('doc_dp_property_tax_bill');
+    }
+
+    // Gift - gift letter only
     if (answers.downPaymentSources.includes('gift')) {
       addDoc('doc_gift_letter');
+    }
+
+    // RRSP Home Buyers' Plan - withdrawal docs and RRSP statement
+    if (answers.downPaymentSources.includes('rrsp_hbp')) {
+      addDoc('doc_dp_rrsp_withdrawal_docs');
+      addDoc('doc_dp_rrsp_statement');
+    }
+
+    // Other - 90-day bank statement (resale) or bank statement (new)
+    if (answers.downPaymentSources.includes('other')) {
+      addDoc(isResale ? 'doc_dp_90day' : 'doc_dp_bank_stmt');
     }
   }
 
@@ -250,7 +275,8 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // ==========================================================================
 
   // If the client owns other properties, generate per-property documents
-  // This creates 2 documents per property: Mortgage Statement and Property Tax Statement
+  // This creates 5 documents per property: Mortgage Statement, Property Tax Statement,
+  // Heating Costs, Legal Description, and Condo Fee Statement
   if (answers.hasOtherProperties === true && answers.numberOfOtherProperties) {
     const perPropertyDocs = generatePerPropertyDocuments(answers.numberOfOtherProperties);
     for (const doc of perPropertyDocs) {

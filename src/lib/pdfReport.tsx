@@ -230,6 +230,12 @@ function MortgagePdfDocument({ formData, documents, reportDate }: PdfReportParam
               {isPurchase ? formatList(formData.downPaymentSources, downPaymentLabels) : 'N/A'}
             </Text>
           </View>
+          {isPurchase && formData.downPaymentOtherDetails ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Down Payment (Other):</Text>
+              <Text style={styles.summaryValue}>{formData.downPaymentOtherDetails}</Text>
+            </View>
+          ) : null}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Income Sources:</Text>
             <Text style={styles.summaryValue}>

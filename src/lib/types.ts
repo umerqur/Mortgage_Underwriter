@@ -37,6 +37,7 @@ export interface FormAnswers {
   incomeSources: IncomeSource[];
   netWorthAccounts: NetWorthAccount[];
   downPaymentSources: DownPaymentSource[];
+  downPaymentOtherDetails: string;
   selfEmployedType: SelfEmployedType;
   otherIncomeTypes: OtherIncomeType[];
   // Existing properties
