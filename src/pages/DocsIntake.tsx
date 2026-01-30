@@ -380,7 +380,9 @@ export default function DocsIntake() {
           if (
             docId.startsWith('doc_other_property_mortgage_statement_') ||
             docId.startsWith('doc_other_property_tax_statement_') ||
-            docId.startsWith('doc_other_property_heating_costs_')
+            docId.startsWith('doc_other_property_heating_costs_') ||
+            docId.startsWith('doc_other_property_legal_description_') ||
+            docId.startsWith('doc_other_property_condo_fee_')
           ) {
             next.delete(docId);
           }

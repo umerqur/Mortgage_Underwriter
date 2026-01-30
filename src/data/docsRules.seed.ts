@@ -321,6 +321,21 @@ export const documentsRegistry: Record<string, Document> = {
     name: 'Property Tax Statement',
     category: 'existing_properties',
   },
+  doc_other_property_heating_costs_base: {
+    id: 'doc_other_property_heating_costs_base',
+    name: 'Heating Costs Document',
+    category: 'existing_properties',
+  },
+  doc_other_property_legal_description_base: {
+    id: 'doc_other_property_legal_description_base',
+    name: 'Legal Description',
+    category: 'existing_properties',
+  },
+  doc_other_property_condo_fee_base: {
+    id: 'doc_other_property_condo_fee_base',
+    name: 'Condo Fee Statement',
+    category: 'existing_properties',
+  },
 };
 
 // =============================================================================

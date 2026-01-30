@@ -18,7 +18,8 @@ import {
 
 /**
  * Generates per-property documents at runtime based on the number of other properties.
- * Creates 3 documents per property: Mortgage Statement, Property Tax Statement, and Heating Costs.
+ * Creates 5 documents per property: Mortgage Statement, Property Tax Statement,
+ * Heating Costs, Legal Description, and Condo Fee Statement.
  */
 function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
   const docs: Document[] = [];
@@ -37,6 +38,16 @@ function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
     docs.push({
       id: `doc_other_property_heating_costs_${i}`,
       name: `Heating Costs Document (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_legal_description_${i}`,
+      name: `Legal Description (Other Property ${i})`,
+      category: 'existing_properties',
+    });
+    docs.push({
+      id: `doc_other_property_condo_fee_${i}`,
+      name: `Condo Fee Statement (Other Property ${i})`,
       category: 'existing_properties',
     });
   }
@@ -264,7 +275,8 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // ==========================================================================
 
   // If the client owns other properties, generate per-property documents
-  // This creates 3 documents per property: Mortgage Statement, Property Tax Statement, and Heating Costs
+  // This creates 5 documents per property: Mortgage Statement, Property Tax Statement,
+  // Heating Costs, Legal Description, and Condo Fee Statement
   if (answers.hasOtherProperties === true && answers.numberOfOtherProperties) {
     const perPropertyDocs = generatePerPropertyDocuments(answers.numberOfOtherProperties);
     for (const doc of perPropertyDocs) {
