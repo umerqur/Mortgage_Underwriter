@@ -889,7 +889,7 @@ export default function DocsIntake() {
               {incomeOptions.map((option) => (
                 <label
                   key={option.value}
-                  className={`flex cursor-pointer items-center rounded-lg border p-3 transition-all ${
+                  className={`flex cursor-pointer items-start rounded-lg border p-3 transition-all ${
                     formData.incomeSources.includes(option.value)
                       ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
                       : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
@@ -899,10 +899,17 @@ export default function DocsIntake() {
                     type="checkbox"
                     checked={formData.incomeSources.includes(option.value)}
                     onChange={() => toggleIncomeSource(option.value)}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span className="ml-2 text-sm font-medium text-slate-700">
-                    {option.label}
+                  <span className="ml-2">
+                    <span className="text-sm font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                    {option.value === 'rental' && (
+                      <span className="block text-xs text-slate-400">
+                        This refers to rental income you already earn from other properties.
+                      </span>
+                    )}
                   </span>
                 </label>
               ))}
