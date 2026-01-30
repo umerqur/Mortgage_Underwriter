@@ -27,6 +27,7 @@ const initialFormState: FormAnswers = {
   brokerName: 'Ousmaan',
   transactionType: '',
   isCondo: null,
+  subjectPropertyRented: null,
   incomeSources: [],
   netWorthAccounts: [],
   downPaymentSources: [],
@@ -109,6 +110,7 @@ export default function DocsIntake() {
           otherIncomeTypes: parsed.otherIncomeTypes || [],
           hasOtherProperties: parsed.hasOtherProperties ?? null,
           numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
+          subjectPropertyRented: parsed.subjectPropertyRented ?? null,
         };
       } catch {
         return initialFormState;
@@ -175,6 +177,7 @@ export default function DocsIntake() {
             otherIncomeTypes: parsed.otherIncomeTypes || [],
             hasOtherProperties: parsed.hasOtherProperties ?? null,
             numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
+            subjectPropertyRented: parsed.subjectPropertyRented ?? null,
           });
           if (result.documents.length > 0) {
             setDocuments(result.documents);
@@ -334,15 +337,18 @@ export default function DocsIntake() {
     });
   };
 
-  // Clear down payment sources when transaction type changes to non-purchase
+  // Clear down payment sources and subject property rented when transaction type changes to non-purchase
   useEffect(() => {
-    if (!isPurchase && formData.downPaymentSources.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        downPaymentSources: [],
-      }));
+    if (!isPurchase) {
+      if (formData.downPaymentSources.length > 0 || formData.subjectPropertyRented !== null) {
+        setFormData((prev) => ({
+          ...prev,
+          downPaymentSources: [],
+          subjectPropertyRented: null,
+        }));
+      }
     }
-  }, [isPurchase, formData.downPaymentSources.length]);
+  }, [isPurchase, formData.downPaymentSources.length, formData.subjectPropertyRented]);
 
   // Clear per-property documents from checkedDocs when hasOtherProperties changes to No
   useEffect(() => {
@@ -630,6 +636,50 @@ export default function DocsIntake() {
               ))}
             </div>
           </div>
+
+          {/* Subject Property Rented - Only show for purchase transactions */}
+          {isPurchase && (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-slate-900">
+                Will any portion of the property be rented out?
+              </label>
+              <p className="mt-1 text-sm text-slate-500">
+                Rental properties require a lease agreement and bank statements
+              </p>
+              <div className="mt-4 flex gap-4">
+                {[
+                  { value: true, label: 'Yes' },
+                  { value: false, label: 'No' },
+                ].map((option) => (
+                  <label
+                    key={String(option.value)}
+                    className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg border p-4 transition-all ${
+                      formData.subjectPropertyRented === option.value
+                        ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="subjectPropertyRented"
+                      value={String(option.value)}
+                      checked={formData.subjectPropertyRented === option.value}
+                      onChange={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          subjectPropertyRented: option.value,
+                        }))
+                      }
+                      className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Other Properties */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

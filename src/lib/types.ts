@@ -33,6 +33,7 @@ export interface FormAnswers {
   // Form fields
   transactionType: TransactionType;
   isCondo: boolean | null;
+  subjectPropertyRented: boolean | null;
   incomeSources: IncomeSource[];
   netWorthAccounts: NetWorthAccount[];
   downPaymentSources: DownPaymentSource[];

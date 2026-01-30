@@ -56,6 +56,11 @@ export function buildTags(answers: FormAnswers): string[] {
     tags.push('condo');
   }
 
+  // Add subject property rented tag if applicable
+  if (answers.subjectPropertyRented === true) {
+    tags.push('subject_property_rented');
+  }
+
   // Add income source tags
   for (const source of answers.incomeSources) {
     tags.push(source);
@@ -169,6 +174,11 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // Condo - include condo documents
   if (answers.isCondo === true) {
     addDocs(condoDocs);
+  }
+
+  // Subject property rented - include lease agreement & bank statements
+  if (answers.subjectPropertyRented === true) {
+    addDoc('doc_lease_bank_stmt');
   }
 
   // ==========================================================================
