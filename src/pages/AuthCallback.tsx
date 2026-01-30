@@ -8,11 +8,33 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handleCallback() {
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
-      if (exchangeError) {
-        console.log('Auth callback error:', exchangeError.message);
-        setError(exchangeError.message);
-        return;
+      const href = window.location.href;
+      const code = new URL(href).searchParams.get('code');
+
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+          console.log('Auth callback error:', exchangeError.message);
+          setError(exchangeError.message);
+          return;
+        }
+      } else {
+        const hash = href.includes('#') ? href.split('#')[1] : '';
+        const params = new URLSearchParams(hash);
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+
+        if (access_token && refresh_token) {
+          const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (sessionError) {
+            console.log('Auth callback error:', sessionError.message);
+            setError(sessionError.message);
+            return;
+          }
+        } else {
+          setError('No code or tokens found in callback URL');
+          return;
+        }
       }
 
       navigate('/app', { replace: true });
