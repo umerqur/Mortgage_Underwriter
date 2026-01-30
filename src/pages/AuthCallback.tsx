@@ -8,7 +8,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     async function handleCallback() {
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
       if (exchangeError) {
         console.log('Auth callback error:', exchangeError.message);
         setError(exchangeError.message);
