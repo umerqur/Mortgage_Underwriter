@@ -144,26 +144,35 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // ==========================================================================
 
   if (isPurchase) {
-    // Down payment bank statement - include if any non-gift source selected
-    const needsDownPaymentStatement = answers.downPaymentSources.some(
-      (source) =>
-        source === 'savings' ||
-        source === 'sale_of_property' ||
-        source === 'rrsp_hbp' ||
-        source === 'other'
-    );
+    const isResale = answers.transactionType === 'purchase_resale';
 
-    if (needsDownPaymentStatement) {
-      if (answers.transactionType === 'purchase_resale') {
-        addDoc('doc_dp_90day');
-      } else if (answers.transactionType === 'purchase_new') {
-        addDoc('doc_dp_bank_stmt');
-      }
+    // Savings / Investment - 90-day bank statement (resale) or bank statement (new)
+    if (answers.downPaymentSources.includes('savings')) {
+      addDoc(isResale ? 'doc_dp_90day' : 'doc_dp_bank_stmt');
     }
 
-    // Gift Letter - include only if gift is selected
+    // Sale of existing property - agreement of sale, mortgage stmt, insurance, tax bill
+    if (answers.downPaymentSources.includes('sale_of_property')) {
+      addDoc('doc_dp_sale_agreement');
+      addDoc('doc_dp_existing_mortgage_statement');
+      addDoc('doc_dp_insurance_policy');
+      addDoc('doc_dp_property_tax_bill');
+    }
+
+    // Gift - gift letter only
     if (answers.downPaymentSources.includes('gift')) {
       addDoc('doc_gift_letter');
+    }
+
+    // RRSP Home Buyers' Plan - withdrawal docs and RRSP statement
+    if (answers.downPaymentSources.includes('rrsp_hbp')) {
+      addDoc('doc_dp_rrsp_withdrawal_docs');
+      addDoc('doc_dp_rrsp_statement');
+    }
+
+    // Other - 90-day bank statement (resale) or bank statement (new)
+    if (answers.downPaymentSources.includes('other')) {
+      addDoc(isResale ? 'doc_dp_90day' : 'doc_dp_bank_stmt');
     }
   }
 

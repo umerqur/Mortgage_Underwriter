@@ -58,6 +58,40 @@ export const documentsRegistry: Record<string, Document> = {
     category: 'transaction',
   },
 
+  // Down Payment Documents - Sale of Existing Property
+  doc_dp_sale_agreement: {
+    id: 'doc_dp_sale_agreement',
+    name: 'Agreement of Sale (Existing Property)',
+    category: 'transaction',
+  },
+  doc_dp_existing_mortgage_statement: {
+    id: 'doc_dp_existing_mortgage_statement',
+    name: 'Current Mortgage Statement (Existing Property)',
+    category: 'transaction',
+  },
+  doc_dp_insurance_policy: {
+    id: 'doc_dp_insurance_policy',
+    name: 'Insurance Policy (Existing Property)',
+    category: 'transaction',
+  },
+  doc_dp_property_tax_bill: {
+    id: 'doc_dp_property_tax_bill',
+    name: 'Property Tax Bill (Existing Property)',
+    category: 'transaction',
+  },
+
+  // Down Payment Documents - RRSP Home Buyers' Plan
+  doc_dp_rrsp_withdrawal_docs: {
+    id: 'doc_dp_rrsp_withdrawal_docs',
+    name: 'RRSP Home Buyers\' Plan Withdrawal Documents',
+    category: 'transaction',
+  },
+  doc_dp_rrsp_statement: {
+    id: 'doc_dp_rrsp_statement',
+    name: 'Most Recent RRSP Statement (Home Buyers\' Plan)',
+    category: 'transaction',
+  },
+
   // Transaction Documents - Renewal/Refinance
   doc_mortgage_stmt: {
     id: 'doc_mortgage_stmt',

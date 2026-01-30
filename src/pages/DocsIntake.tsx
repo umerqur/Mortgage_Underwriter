@@ -31,6 +31,7 @@ const initialFormState: FormAnswers = {
   incomeSources: [],
   netWorthAccounts: [],
   downPaymentSources: [],
+  downPaymentOtherDetails: '',
   selfEmployedType: '',
   otherIncomeTypes: [],
   hasOtherProperties: null,
@@ -106,6 +107,7 @@ export default function DocsIntake() {
           clientPhone: parsed.clientPhone || '',
           brokerName: parsed.brokerName || 'Ousmaan',
           downPaymentSources: parsed.downPaymentSources || [],
+          downPaymentOtherDetails: parsed.downPaymentOtherDetails || '',
           selfEmployedType: parsed.selfEmployedType || '',
           otherIncomeTypes: parsed.otherIncomeTypes || [],
           hasOtherProperties: parsed.hasOtherProperties ?? null,
@@ -173,6 +175,7 @@ export default function DocsIntake() {
             clientPhone: parsed.clientPhone || '',
             brokerName: parsed.brokerName || 'Ousmaan',
             downPaymentSources: parsed.downPaymentSources || [],
+            downPaymentOtherDetails: parsed.downPaymentOtherDetails || '',
             selfEmployedType: parsed.selfEmployedType || '',
             otherIncomeTypes: parsed.otherIncomeTypes || [],
             hasOtherProperties: parsed.hasOtherProperties ?? null,
@@ -308,12 +311,18 @@ export default function DocsIntake() {
   };
 
   const toggleDownPaymentSource = (source: DownPaymentSource) => {
-    setFormData((prev) => ({
-      ...prev,
-      downPaymentSources: prev.downPaymentSources.includes(source)
-        ? prev.downPaymentSources.filter((s) => s !== source)
-        : [...prev.downPaymentSources, source],
-    }));
+    setFormData((prev) => {
+      const removing = prev.downPaymentSources.includes(source);
+      return {
+        ...prev,
+        downPaymentSources: removing
+          ? prev.downPaymentSources.filter((s) => s !== source)
+          : [...prev.downPaymentSources, source],
+        // Clear description when "other" is unchecked
+        downPaymentOtherDetails:
+          source === 'other' && removing ? '' : prev.downPaymentOtherDetails,
+      };
+    });
   };
 
   const toggleOtherIncomeType = (incomeType: OtherIncomeType) => {
@@ -337,18 +346,19 @@ export default function DocsIntake() {
     });
   };
 
-  // Clear down payment sources and subject property rented when transaction type changes to non-purchase
+  // Clear down payment sources, other details, and subject property rented when transaction type changes to non-purchase
   useEffect(() => {
     if (!isPurchase) {
-      if (formData.downPaymentSources.length > 0 || formData.subjectPropertyRented !== null) {
+      if (formData.downPaymentSources.length > 0 || formData.downPaymentOtherDetails || formData.subjectPropertyRented !== null) {
         setFormData((prev) => ({
           ...prev,
           downPaymentSources: [],
+          downPaymentOtherDetails: '',
           subjectPropertyRented: null,
         }));
       }
     }
-  }, [isPurchase, formData.downPaymentSources.length, formData.subjectPropertyRented]);
+  }, [isPurchase, formData.downPaymentSources.length, formData.downPaymentOtherDetails, formData.subjectPropertyRented]);
 
   // Clear per-property documents from checkedDocs when hasOtherProperties changes to No
   useEffect(() => {
@@ -592,6 +602,29 @@ export default function DocsIntake() {
                   </label>
                 ))}
               </div>
+              {formData.downPaymentSources.includes('other') && (
+                <div className="mt-4">
+                  <label
+                    htmlFor="downPaymentOtherDetails"
+                    className="block text-sm font-medium text-slate-700"
+                  >
+                    Describe the down payment source
+                  </label>
+                  <input
+                    type="text"
+                    id="downPaymentOtherDetails"
+                    value={formData.downPaymentOtherDetails}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        downPaymentOtherDetails: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g., inheritance, sale of investments"
+                    className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              )}
             </div>
           )}
 
