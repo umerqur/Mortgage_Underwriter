@@ -318,7 +318,6 @@ export const renewalRefinanceDocs: string[] = [
 // Property: Condo
 export const condoDocs: string[] = [
   'doc_condo_fee',
-  'doc_lease_bank_stmt',
 ];
 
 // Income: Employed
