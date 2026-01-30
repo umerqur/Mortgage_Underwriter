@@ -18,9 +18,11 @@ export function SiteHeader({ rightSlot, variant = 'solid' }: SiteHeaderProps) {
     <header className={headerClasses}>
       <Container>
         <div className="flex justify-between items-center py-4">
-          <BrandBlock size="header" linkTo={variant === 'solid' ? '/' : undefined} />
+          <div className="min-w-0 shrink-0">
+            <BrandBlock size="header" linkTo={variant === 'solid' ? '/' : undefined} />
+          </div>
           {rightSlot && (
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               {rightSlot}
             </div>
           )}
