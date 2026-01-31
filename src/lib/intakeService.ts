@@ -36,6 +36,29 @@ export async function getIntake(intakeId: string): Promise<Intake> {
   return data as Intake;
 }
 
+export interface UpdateIntakeDetailsParams {
+  broker_name?: string;
+  client_first_name?: string;
+  client_last_name?: string;
+  client_email?: string;
+  client_phone?: string;
+}
+
+export async function updateIntakeDetails(
+  intakeId: string,
+  params: UpdateIntakeDetailsParams,
+): Promise<Intake> {
+  const { data, error } = await supabase
+    .from('intakes')
+    .update(params)
+    .eq('id', intakeId)
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return data as Intake;
+}
+
 // ---------- Uploads ----------
 
 export async function getUploads(intakeId: string): Promise<IntakeUpload[]> {
