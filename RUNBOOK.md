@@ -179,7 +179,30 @@ Expected: 3 policies (INSERT, SELECT, DELETE).
 
 ---
 
-## 9. Verify Indexes
+## 9. Verify Foreign Keys and Trigger
+
+```sql
+-- FK from intakes.created_by_user_id → auth.users(id)
+SELECT conname, conrelid::regclass, confrelid::regclass
+FROM pg_constraint
+WHERE conname = 'intakes_created_by_fkey';
+```
+
+Expected: one row showing `intakes` → `users`.
+
+```sql
+-- updated_at trigger on intakes
+SELECT trigger_name, event_manipulation, action_timing
+FROM information_schema.triggers
+WHERE event_object_table = 'intakes'
+  AND trigger_name = 'trg_set_intakes_updated_at';
+```
+
+Expected: one row (`BEFORE UPDATE`).
+
+---
+
+## 10. Verify Indexes
 
 ```sql
 SELECT indexname, tablename
@@ -198,12 +221,16 @@ Expected: 4 rows.
 
 ---
 
-## 10. End-to-End Smoke Test
+## 11. End-to-End Smoke Test
 
 Run these in the SQL Editor while authenticated as a test user, or use
 `psql` with `SET request.jwt.claims = '...'` to simulate a user context.
 
-### 10a. Insert a test intake
+### 11a. Insert a test intake
+
+`created_by_user_id` defaults to `auth.uid()` and `updated_at` auto-sets on
+insert and update. When running from `psql` (outside Supabase auth context),
+you must provide `created_by_user_id` explicitly.
 
 ```sql
 -- Replace <your-user-uuid> with your auth.uid()
@@ -221,10 +248,10 @@ VALUES (
   ARRAY['purchase','resale'],
   '[{"id":"doc_aps","name":"Agreement of Purchase and Sale"}]'::jsonb
 )
-RETURNING id;
+RETURNING id, created_at, updated_at;
 ```
 
-### 10b. Insert a test upload
+### 11b. Insert a test upload
 
 ```sql
 -- Replace <intake-id> with the id returned above
@@ -239,7 +266,7 @@ VALUES (
 RETURNING id;
 ```
 
-### 10c. Insert a test extracted field
+### 11c. Insert a test extracted field
 
 ```sql
 -- Replace <intake-id> and <upload-id> with the ids above
@@ -257,7 +284,7 @@ VALUES (
 RETURNING id;
 ```
 
-### 10d. Verify ownership isolation
+### 11d. Verify ownership isolation
 
 From a *different* user context (or via service role with a different uid),
 confirm these queries return zero rows:
@@ -269,7 +296,7 @@ SELECT * FROM intake_uploads WHERE intake_id = '<intake-id>';
 SELECT * FROM extracted_fields WHERE intake_id = '<intake-id>';
 ```
 
-### 10e. Test the edge function
+### 11e. Test the edge function
 
 ```bash
 curl -X POST \
@@ -283,7 +310,7 @@ Expected: `200` with `{ "signed_url": "...", "expires_in": 600 }`.
 
 With a wrong intake_id or another user's JWT, expect `403` or `404`.
 
-### 10f. Cleanup
+### 11f. Cleanup
 
 ```sql
 DELETE FROM intakes WHERE broker_name = 'Test Broker';
