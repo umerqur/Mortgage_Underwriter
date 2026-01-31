@@ -13,7 +13,7 @@ import { runEngine } from '../lib/docsEngine';
 import { createIntake } from '../lib/intakeService';
 
 const STORAGE_KEY = 'mortgage_docs_form';
-const CHECKED_DOCS_KEY = 'mortgage_docs_checked';
+
 
 const initialFormState: FormAnswers = {
   clientFirstName: '',
@@ -81,14 +81,6 @@ const otherIncomeOptions: { value: OtherIncomeType; label: string }[] = [
   { value: 'maternity_leave', label: 'Maternity Leave' },
 ];
 
-const categoryLabels: Record<Document['category'], string> = {
-  transaction: 'Transaction Documents',
-  property: 'Property Documents',
-  income: 'Income Documents',
-  net_worth: 'Net Worth Documents',
-  existing_properties: 'Existing Properties',
-};
-
 export default function DocsIntake() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormAnswers>(() => {
@@ -122,18 +114,6 @@ export default function DocsIntake() {
     return initialFormState;
   });
 
-  const [checkedDocs, setCheckedDocs] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem(CHECKED_DOCS_KEY);
-    if (saved) {
-      try {
-        return new Set(JSON.parse(saved));
-      } catch {
-        return new Set();
-      }
-    }
-    return new Set();
-  });
-
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -153,11 +133,6 @@ export default function DocsIntake() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
-
-  // Persist checked docs to localStorage
-  useEffect(() => {
-    localStorage.setItem(CHECKED_DOCS_KEY, JSON.stringify([...checkedDocs]));
-  }, [checkedDocs]);
 
   const validate = useCallback((): string[] => {
     const errors: string[] = [];
@@ -214,7 +189,7 @@ export default function DocsIntake() {
       const intake = await createIntake(formData, result.tags, result.documents);
       // Clear localStorage after successful save
       localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(CHECKED_DOCS_KEY);
+
       navigate(`/intake/${intake.id}`);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Failed to create intake');
@@ -225,11 +200,9 @@ export default function DocsIntake() {
 
   const handleReset = () => {
     setFormData(initialFormState);
-    setCheckedDocs(new Set());
     setValidationErrors([]);
     setSaveError(null);
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(CHECKED_DOCS_KEY);
   };
 
   const toggleIncomeSource = (source: IncomeSource) => {
@@ -295,18 +268,6 @@ export default function DocsIntake() {
     }));
   };
 
-  const toggleDocChecked = (docId: string) => {
-    setCheckedDocs((prev) => {
-      const next = new Set(prev);
-      if (next.has(docId)) {
-        next.delete(docId);
-      } else {
-        next.add(docId);
-      }
-      return next;
-    });
-  };
-
   // Clear down payment sources, other details, and subject property rented when transaction type changes to non-purchase
   useEffect(() => {
     if (!isPurchase) {
@@ -320,28 +281,6 @@ export default function DocsIntake() {
       }
     }
   }, [isPurchase, formData.downPaymentSources.length, formData.downPaymentOtherDetails, formData.subjectPropertyRented]);
-
-  // Clear per-property documents from checkedDocs when hasOtherProperties changes to No
-  useEffect(() => {
-    if (formData.hasOtherProperties === false) {
-      setCheckedDocs((prev) => {
-        const next = new Set(prev);
-        // Remove any per-property document IDs
-        for (const docId of prev) {
-          if (
-            docId.startsWith('doc_other_property_mortgage_statement_') ||
-            docId.startsWith('doc_other_property_tax_statement_') ||
-            docId.startsWith('doc_other_property_heating_costs_') ||
-            docId.startsWith('doc_other_property_legal_description_') ||
-            docId.startsWith('doc_other_property_condo_fee_')
-          ) {
-            next.delete(docId);
-          }
-        }
-        return next;
-      });
-    }
-  }, [formData.hasOtherProperties]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
