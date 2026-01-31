@@ -18,10 +18,13 @@ import {
 
 /**
  * Generates per-property documents at runtime based on the number of other properties.
- * Creates 5 documents per property: Mortgage Statement, Property Tax Statement,
- * Heating Costs, Legal Description, and Condo Fee Statement.
+ * Always includes: Mortgage Statement, Property Tax Statement, Heating Costs, Legal Description.
+ * Condo Fee Statement is only included when the property is flagged as a condo.
  */
-function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
+function generatePerPropertyDocuments(
+  numberOfProperties: number,
+  condoFlags: boolean[],
+): Document[] {
   const docs: Document[] = [];
 
   for (let i = 1; i <= numberOfProperties; i++) {
@@ -45,11 +48,13 @@ function generatePerPropertyDocuments(numberOfProperties: number): Document[] {
       name: `Legal Description (Other Property ${i})`,
       category: 'existing_properties',
     });
-    docs.push({
-      id: `doc_other_property_condo_fee_${i}`,
-      name: `Condo Fee Statement (Other Property ${i})`,
-      category: 'existing_properties',
-    });
+    if (condoFlags[i - 1]) {
+      docs.push({
+        id: `doc_other_property_condo_fee_${i}`,
+        name: `Condo Fee Statement (Other Property ${i})`,
+        category: 'existing_properties',
+      });
+    }
   }
 
   return docs;
@@ -275,10 +280,13 @@ export function recommendDocuments(answers: FormAnswers): Document[] {
   // ==========================================================================
 
   // If the client owns other properties, generate per-property documents
-  // This creates 5 documents per property: Mortgage Statement, Property Tax Statement,
-  // Heating Costs, Legal Description, and Condo Fee Statement
+  // Always: Mortgage Statement, Property Tax, Heating Costs, Legal Description
+  // Conditional: Condo Fee Statement (only if that property is flagged as condo)
   if (answers.hasOtherProperties === true && answers.numberOfOtherProperties) {
-    const perPropertyDocs = generatePerPropertyDocuments(answers.numberOfOtherProperties);
+    const perPropertyDocs = generatePerPropertyDocuments(
+      answers.numberOfOtherProperties,
+      answers.otherPropertiesIsCondo || [],
+    );
     for (const doc of perPropertyDocs) {
       // Per-property docs are intentionally not deduped - add directly
       documentsMap.set(doc.id, doc);

@@ -43,6 +43,9 @@ export interface FormAnswers {
   // Existing properties
   hasOtherProperties: boolean | null;
   numberOfOtherProperties: number | null;
+  otherPropertiesIsCondo: boolean[];
+  // Income other free text
+  incomeOtherDetails: string;
 }
 
 // Document definition

@@ -258,6 +258,12 @@ function MortgagePdfDocument({ formData, documents, reportDate }: PdfReportParam
                 : 'N/A'}
             </Text>
           </View>
+          {formData.incomeOtherDetails ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Income (Other):</Text>
+              <Text style={styles.summaryValue}>{formData.incomeOtherDetails}</Text>
+            </View>
+          ) : null}
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Net Worth Accounts:</Text>
             <Text style={styles.summaryValue}>

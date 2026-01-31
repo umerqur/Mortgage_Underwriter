@@ -36,6 +36,8 @@ const initialFormState: FormAnswers = {
   otherIncomeTypes: [],
   hasOtherProperties: null,
   numberOfOtherProperties: null,
+  otherPropertiesIsCondo: [],
+  incomeOtherDetails: '',
 };
 
 const transactionOptions: { value: TransactionType; label: string }[] = [
@@ -112,7 +114,9 @@ export default function DocsIntake() {
           otherIncomeTypes: parsed.otherIncomeTypes || [],
           hasOtherProperties: parsed.hasOtherProperties ?? null,
           numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
+          otherPropertiesIsCondo: parsed.otherPropertiesIsCondo || [],
           subjectPropertyRented: parsed.subjectPropertyRented ?? null,
+          incomeOtherDetails: parsed.incomeOtherDetails || '',
         };
       } catch {
         return initialFormState;
@@ -180,7 +184,9 @@ export default function DocsIntake() {
             otherIncomeTypes: parsed.otherIncomeTypes || [],
             hasOtherProperties: parsed.hasOtherProperties ?? null,
             numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
+            otherPropertiesIsCondo: parsed.otherPropertiesIsCondo || [],
             subjectPropertyRented: parsed.subjectPropertyRented ?? null,
+            incomeOtherDetails: parsed.incomeOtherDetails || '',
           });
           if (result.documents.length > 0) {
             setDocuments(result.documents);
@@ -293,6 +299,7 @@ export default function DocsIntake() {
       // Clear dependent fields when parent is unchecked
       let newSelfEmployedType = prev.selfEmployedType;
       let newOtherIncomeTypes = prev.otherIncomeTypes;
+      let newIncomeOtherDetails = prev.incomeOtherDetails;
 
       if (source === 'self_employed' && prev.incomeSources.includes(source)) {
         newSelfEmployedType = '';
@@ -300,6 +307,7 @@ export default function DocsIntake() {
 
       if (source === 'other' && prev.incomeSources.includes(source)) {
         newOtherIncomeTypes = [];
+        newIncomeOtherDetails = '';
       }
 
       return {
@@ -307,6 +315,7 @@ export default function DocsIntake() {
         incomeSources: newIncomeSources,
         selfEmployedType: newSelfEmployedType,
         otherIncomeTypes: newOtherIncomeTypes,
+        incomeOtherDetails: newIncomeOtherDetails,
       };
     });
   };
@@ -762,8 +771,9 @@ export default function DocsIntake() {
                       setFormData((prev) => ({
                         ...prev,
                         hasOtherProperties: option.value,
-                        // Clear numberOfOtherProperties if set to false
+                        // Clear dependent fields if set to false
                         numberOfOtherProperties: option.value ? prev.numberOfOtherProperties : null,
+                        otherPropertiesIsCondo: option.value ? prev.otherPropertiesIsCondo : [],
                       }))
                     }
                     className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
@@ -801,14 +811,69 @@ export default function DocsIntake() {
                 value={formData.numberOfOtherProperties ?? ''}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setFormData((prev) => ({
-                    ...prev,
-                    numberOfOtherProperties: value ? Math.min(10, Math.max(1, parseInt(value, 10))) : null,
-                  }));
+                  const n = value ? Math.min(10, Math.max(1, parseInt(value, 10))) : null;
+                  setFormData((prev) => {
+                    // Resize condo flags array to match new N, preserving existing values
+                    const oldFlags = prev.otherPropertiesIsCondo;
+                    const newFlags = n
+                      ? Array.from({ length: n }, (_, idx) => oldFlags[idx] ?? false)
+                      : [];
+                    return {
+                      ...prev,
+                      numberOfOtherProperties: n,
+                      otherPropertiesIsCondo: newFlags,
+                    };
+                  });
                 }}
                 className="mt-4 block w-32 rounded-lg border border-emerald-300 px-3 py-2 text-slate-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                 placeholder="1"
               />
+              {formData.numberOfOtherProperties && formData.otherPropertiesIsCondo.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-medium text-slate-700">
+                    Is each property a condo?
+                  </p>
+                  {formData.otherPropertiesIsCondo.map((isCondo, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <span className="text-sm text-slate-600 w-36">
+                        Other Property {idx + 1}
+                      </span>
+                      <label className={`flex cursor-pointer items-center rounded border px-3 py-1 text-sm transition-all ${isCondo ? 'border-emerald-500 bg-emerald-100 ring-1 ring-emerald-500' : 'border-emerald-200 bg-white hover:border-emerald-300'}`}>
+                        <input
+                          type="radio"
+                          name={`otherPropertyCondo_${idx}`}
+                          checked={isCondo === true}
+                          onChange={() =>
+                            setFormData((prev) => {
+                              const flags = [...prev.otherPropertiesIsCondo];
+                              flags[idx] = true;
+                              return { ...prev, otherPropertiesIsCondo: flags };
+                            })
+                          }
+                          className="h-3 w-3 border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span className="ml-1.5">Yes</span>
+                      </label>
+                      <label className={`flex cursor-pointer items-center rounded border px-3 py-1 text-sm transition-all ${isCondo === false ? 'border-emerald-500 bg-emerald-100 ring-1 ring-emerald-500' : 'border-emerald-200 bg-white hover:border-emerald-300'}`}>
+                        <input
+                          type="radio"
+                          name={`otherPropertyCondo_${idx}`}
+                          checked={isCondo === false}
+                          onChange={() =>
+                            setFormData((prev) => {
+                              const flags = [...prev.otherPropertiesIsCondo];
+                              flags[idx] = false;
+                              return { ...prev, otherPropertiesIsCondo: flags };
+                            })
+                          }
+                          className="h-3 w-3 border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span className="ml-1.5">No</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -824,7 +889,7 @@ export default function DocsIntake() {
               {incomeOptions.map((option) => (
                 <label
                   key={option.value}
-                  className={`flex cursor-pointer items-center rounded-lg border p-3 transition-all ${
+                  className={`flex cursor-pointer items-start rounded-lg border p-3 transition-all ${
                     formData.incomeSources.includes(option.value)
                       ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
                       : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
@@ -834,10 +899,17 @@ export default function DocsIntake() {
                     type="checkbox"
                     checked={formData.incomeSources.includes(option.value)}
                     onChange={() => toggleIncomeSource(option.value)}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span className="ml-2 text-sm font-medium text-slate-700">
-                    {option.label}
+                  <span className="ml-2">
+                    <span className="text-sm font-medium text-slate-700">
+                      {option.label}
+                    </span>
+                    {option.value === 'rental' && (
+                      <span className="block text-xs text-slate-400">
+                        This refers to rental income you already earn from other properties.
+                      </span>
+                    )}
                   </span>
                 </label>
               ))}
@@ -915,6 +987,27 @@ export default function DocsIntake() {
                     </span>
                   </label>
                 ))}
+              </div>
+              <div className="mt-4">
+                <label
+                  htmlFor="incomeOtherDetails"
+                  className="block text-sm font-medium text-slate-700"
+                >
+                  Describe the income source
+                </label>
+                <input
+                  type="text"
+                  id="incomeOtherDetails"
+                  value={formData.incomeOtherDetails}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      incomeOtherDetails: e.target.value,
+                    }))
+                  }
+                  placeholder="e.g., foreign income, trust distributions"
+                  className="mt-1 block w-full rounded-lg border border-teal-300 px-3 py-2 text-slate-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                />
               </div>
             </div>
           )}
