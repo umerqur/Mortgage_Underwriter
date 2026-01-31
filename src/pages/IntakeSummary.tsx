@@ -7,6 +7,7 @@ import {
   generatePdfFilename,
   formatReportDate,
 } from '../lib/pdfReport';
+import EditIntakeModal from '../components/EditIntakeModal';
 
 const categoryOrder = ['transaction', 'property', 'income', 'net_worth', 'existing_properties'] as const;
 
@@ -27,6 +28,7 @@ export default function IntakeSummary() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!intakeId) return;
@@ -205,9 +207,20 @@ export default function IntakeSummary() {
                 {createdDate}
               </p>
             </div>
-            <span className="mt-2 inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200 sm:mt-0">
-              {totalDocs} documents required
-            </span>
+            <div className="mt-2 flex items-center gap-2 sm:mt-0">
+              <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                {totalDocs} documents required
+              </span>
+              <button
+                onClick={() => setEditOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit
+              </button>
+            </div>
           </div>
 
           {/* Progress bar */}
@@ -336,6 +349,14 @@ export default function IntakeSummary() {
             </div>
           )}
         </div>
+
+        {/* Edit intake details modal */}
+        <EditIntakeModal
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          intake={intake}
+          onSaved={(updated) => setIntake(updated)}
+        />
       </div>
     </div>
   );
