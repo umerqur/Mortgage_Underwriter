@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type {
   FormAnswers,
   TransactionType,
@@ -7,17 +8,12 @@ import type {
   DownPaymentSource,
   SelfEmployedType,
   OtherIncomeType,
-  Document,
 } from '../lib/types';
 import { runEngine } from '../lib/docsEngine';
-import {
-  buildPdfBlob,
-  generatePdfFilename,
-  formatReportDate,
-} from '../lib/pdfReport';
+import { createIntake } from '../lib/intakeService';
 
 const STORAGE_KEY = 'mortgage_docs_form';
-const CHECKED_DOCS_KEY = 'mortgage_docs_checked';
+
 
 const initialFormState: FormAnswers = {
   clientFirstName: '',
@@ -85,15 +81,8 @@ const otherIncomeOptions: { value: OtherIncomeType; label: string }[] = [
   { value: 'maternity_leave', label: 'Maternity Leave' },
 ];
 
-const categoryLabels: Record<Document['category'], string> = {
-  transaction: 'Transaction Documents',
-  property: 'Property Documents',
-  income: 'Income Documents',
-  net_worth: 'Net Worth Documents',
-  existing_properties: 'Existing Properties',
-};
-
 export default function DocsIntake() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormAnswers>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -125,22 +114,9 @@ export default function DocsIntake() {
     return initialFormState;
   });
 
-  const [checkedDocs, setCheckedDocs] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem(CHECKED_DOCS_KEY);
-    if (saved) {
-      try {
-        return new Set(JSON.parse(saved));
-      } catch {
-        return new Set();
-      }
-    }
-    return new Set();
-  });
-
-  const [submitted, setSubmitted] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [pdfLoading, setPdfLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Computed: is this a purchase transaction?
   const isPurchase =
@@ -157,47 +133,6 @@ export default function DocsIntake() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
-
-  // Persist checked docs to localStorage
-  useEffect(() => {
-    localStorage.setItem(CHECKED_DOCS_KEY, JSON.stringify([...checkedDocs]));
-  }, [checkedDocs]);
-
-  // Check if there's saved data on mount to auto-show results
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.transactionType) {
-          const result = runEngine({
-            ...initialFormState,
-            ...parsed,
-            clientFirstName: parsed.clientFirstName || '',
-            clientLastName: parsed.clientLastName || '',
-            clientEmail: parsed.clientEmail || '',
-            clientPhone: parsed.clientPhone || '',
-            brokerName: parsed.brokerName || 'Ousmaan',
-            downPaymentSources: parsed.downPaymentSources || [],
-            downPaymentOtherDetails: parsed.downPaymentOtherDetails || '',
-            selfEmployedType: parsed.selfEmployedType || '',
-            otherIncomeTypes: parsed.otherIncomeTypes || [],
-            hasOtherProperties: parsed.hasOtherProperties ?? null,
-            numberOfOtherProperties: parsed.numberOfOtherProperties ?? null,
-            otherPropertiesIsCondo: parsed.otherPropertiesIsCondo || [],
-            subjectPropertyRented: parsed.subjectPropertyRented ?? null,
-            incomeOtherDetails: parsed.incomeOtherDetails || '',
-          });
-          if (result.documents.length > 0) {
-            setDocuments(result.documents);
-            setSubmitted(true);
-          }
-        }
-      } catch {
-        // Ignore parse errors
-      }
-    }
-  }, []);
 
   const validate = useCallback((): string[] => {
     const errors: string[] = [];
@@ -237,57 +172,37 @@ export default function DocsIntake() {
     return errors;
   }, [formData, isSelfEmployed, isOtherIncome, isPurchase]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const errors = validate();
     setValidationErrors(errors);
+    setSaveError(null);
 
     if (errors.length > 0) {
       return;
     }
 
-    const result = runEngine(formData);
-    setDocuments(result.documents);
-    setSubmitted(true);
+    setSaving(true);
+    try {
+      const result = runEngine(formData);
+      const intake = await createIntake(formData, result.tags, result.documents);
+      // Clear localStorage after successful save
+      localStorage.removeItem(STORAGE_KEY);
+
+      navigate(`/intake/${intake.id}`);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to create intake');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReset = () => {
     setFormData(initialFormState);
-    setCheckedDocs(new Set());
-    setDocuments([]);
-    setSubmitted(false);
     setValidationErrors([]);
+    setSaveError(null);
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(CHECKED_DOCS_KEY);
-  };
-
-  const handleGeneratePdf = async () => {
-    setPdfLoading(true);
-    try {
-      const reportDate = formatReportDate();
-      const blob = await buildPdfBlob({
-        formData,
-        documents,
-        reportDate,
-      });
-      const url = URL.createObjectURL(blob);
-      const filename = generatePdfFilename(
-        formData.clientFirstName,
-        formData.clientLastName
-      );
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
-    } finally {
-      setPdfLoading(false);
-    }
   };
 
   const toggleIncomeSource = (source: IncomeSource) => {
@@ -353,18 +268,6 @@ export default function DocsIntake() {
     }));
   };
 
-  const toggleDocChecked = (docId: string) => {
-    setCheckedDocs((prev) => {
-      const next = new Set(prev);
-      if (next.has(docId)) {
-        next.delete(docId);
-      } else {
-        next.add(docId);
-      }
-      return next;
-    });
-  };
-
   // Clear down payment sources, other details, and subject property rented when transaction type changes to non-purchase
   useEffect(() => {
     if (!isPurchase) {
@@ -378,40 +281,6 @@ export default function DocsIntake() {
       }
     }
   }, [isPurchase, formData.downPaymentSources.length, formData.downPaymentOtherDetails, formData.subjectPropertyRented]);
-
-  // Clear per-property documents from checkedDocs when hasOtherProperties changes to No
-  useEffect(() => {
-    if (formData.hasOtherProperties === false) {
-      setCheckedDocs((prev) => {
-        const next = new Set(prev);
-        // Remove any per-property document IDs
-        for (const docId of prev) {
-          if (
-            docId.startsWith('doc_other_property_mortgage_statement_') ||
-            docId.startsWith('doc_other_property_tax_statement_') ||
-            docId.startsWith('doc_other_property_heating_costs_') ||
-            docId.startsWith('doc_other_property_legal_description_') ||
-            docId.startsWith('doc_other_property_condo_fee_')
-          ) {
-            next.delete(docId);
-          }
-        }
-        return next;
-      });
-    }
-  }, [formData.hasOtherProperties]);
-
-  // Group documents by category
-  const groupedDocs = documents.reduce(
-    (acc, doc) => {
-      if (!acc[doc.category]) {
-        acc[doc.category] = [];
-      }
-      acc[doc.category].push(doc);
-      return acc;
-    },
-    {} as Record<Document['category'], Document[]>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
@@ -439,6 +308,13 @@ export default function DocsIntake() {
                   <li key={i}>{error}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Save Error */}
+          {saveError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-medium text-red-800">{saveError}</p>
             </div>
           )}
 
@@ -1048,131 +924,31 @@ export default function DocsIntake() {
           <div className="flex gap-4">
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              disabled={saving}
+              className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 active:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-400"
             >
-              Get Document Checklist
+              {saving ? (
+                <span className="inline-flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Creating Intake...
+                </span>
+              ) : (
+                'Get Document Checklist'
+              )}
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+              disabled={saving}
+              className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 active:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:text-slate-400"
             >
               Reset
             </button>
           </div>
         </form>
-
-        {/* Results */}
-        {submitted && (
-          <div className="mt-10">
-            <div className="mb-6 border-t border-slate-200 pt-8">
-              <h2 className="text-2xl font-bold text-slate-900">
-                Recommended Documents
-              </h2>
-              <p className="mt-2 text-slate-600">
-                Based on your selections, you'll need the following documents.
-                Check them off as you collect them.
-              </p>
-            </div>
-
-            {documents.length === 0 ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
-                <p className="text-slate-500">
-                  No documents to display. Please complete the form above.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {(
-                  ['transaction', 'property', 'income', 'net_worth', 'existing_properties'] as const
-                ).map((category) => {
-                  const docs = groupedDocs[category];
-                  if (!docs || docs.length === 0) return null;
-
-                  return (
-                    <div
-                      key={category}
-                      className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
-                    >
-                      <h3 className="mb-4 text-lg font-semibold text-slate-900">
-                        {categoryLabels[category]}
-                      </h3>
-                      <ul className="space-y-3">
-                        {docs.map((doc) => (
-                          <li key={doc.id}>
-                            <label className="flex cursor-pointer items-start gap-3">
-                              <input
-                                type="checkbox"
-                                checked={checkedDocs.has(doc.id)}
-                                onChange={() => toggleDocChecked(doc.id)}
-                                className="mt-1 h-5 w-5 rounded border-slate-300 text-green-600 focus:ring-green-500"
-                              />
-                              <div className="flex-1">
-                                <span
-                                  className={`text-base ${
-                                    checkedDocs.has(doc.id)
-                                      ? 'text-slate-400 line-through'
-                                      : 'text-slate-700'
-                                  }`}
-                                >
-                                  {doc.name}
-                                </span>
-                                {doc.note && (
-                                  <p className="mt-1 text-sm text-slate-500">
-                                    {doc.note}
-                                  </p>
-                                )}
-                              </div>
-                            </label>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-
-                {/* Progress indicator */}
-                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-slate-700">
-                      Progress
-                    </span>
-                    <span className="text-sm font-semibold text-slate-900">
-                      {checkedDocs.size} / {documents.length} collected
-                    </span>
-                  </div>
-                  <div className="mt-3 h-2 w-full rounded-full bg-slate-200">
-                    <div
-                      className="h-2 rounded-full bg-green-500 transition-all duration-300"
-                      style={{
-                        width: `${(checkedDocs.size / documents.length) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={handleGeneratePdf}
-                    disabled={pdfLoading}
-                    className="flex-1 rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-indigo-400"
-                  >
-                    {pdfLoading ? 'Generating...' : 'Generate PDF'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="rounded-lg border border-slate-300 bg-white px-6 py-3 text-base font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

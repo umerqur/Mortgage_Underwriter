@@ -1,9 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import DocsIntake from './pages/DocsIntake';
+import IntakeSummary from './pages/IntakeSummary';
+import DocumentLocker from './pages/DocumentLocker';
 import ProtectedRoute from './components/ProtectedRoute';
 import TopBar from './components/TopBar';
 
@@ -37,6 +39,39 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/intake/new"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <DocsIntake />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/intake/:intakeId"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <IntakeSummary />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/intake/:intakeId/uploads"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <DocumentLocker />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
