@@ -4,6 +4,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import DocsIntake from './pages/DocsIntake';
+import IntakesList from './pages/IntakesList';
 import IntakeSummary from './pages/IntakeSummary';
 import DocumentLocker from './pages/DocumentLocker';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,6 +30,16 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Protected routes */}
+          <Route
+            path="/intakes"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <IntakesList />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/app"
             element={
