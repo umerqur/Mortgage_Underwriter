@@ -13,9 +13,9 @@ export default function Login() {
   const [linkSent, setLinkSent] = useState(false);
 
   useEffect(() => {
-    // If already logged in with allowed email, redirect to app
+    // If already logged in with allowed email, redirect to intakes list
     if (!loading && session?.user?.email && isEmailAllowed(session.user.email)) {
-      navigate('/app');
+      navigate('/intakes');
     }
   }, [session, loading, navigate]);
 

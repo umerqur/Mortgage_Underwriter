@@ -8,6 +8,7 @@ interface IntakeRow {
   broker_name: string;
   client_first_name: string;
   client_last_name: string;
+  client_email: string | null;
 }
 
 export default function IntakesList() {
@@ -21,9 +22,9 @@ export default function IntakesList() {
         setLoading(true);
         const { data, error: queryError } = await supabase
           .from('intakes')
-          .select('id, created_at, broker_name, client_first_name, client_last_name')
+          .select('id, created_at, broker_name, client_first_name, client_last_name, client_email')
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(25);
 
         if (queryError) throw queryError;
         setIntakes(data ?? []);
@@ -92,12 +93,16 @@ export default function IntakesList() {
             <svg className="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p className="mt-4 text-sm text-slate-500">No intakes yet.</p>
+            <h2 className="mt-4 text-lg font-semibold text-slate-900">No intakes yet</h2>
+            <p className="mt-1 text-sm text-slate-500">Create your first intake to start collecting documents.</p>
             <Link
               to="/app"
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
             >
-              Create Your First Intake
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Intake
             </Link>
           </div>
         ) : (
@@ -121,6 +126,9 @@ export default function IntakesList() {
                         </p>
                         <p className="mt-0.5 text-xs text-slate-500">
                           Broker: {intake.broker_name}
+                          {intake.client_email && (
+                            <span className="ml-2 text-slate-400">&middot; {intake.client_email}</span>
+                          )}
                         </p>
                       </div>
                       <div className="flex items-center gap-3 shrink-0">

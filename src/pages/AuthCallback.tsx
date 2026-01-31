@@ -37,7 +37,7 @@ export default function AuthCallback() {
         }
       }
 
-      navigate('/app', { replace: true });
+      navigate('/intakes', { replace: true });
     }
 
     handleCallback();
