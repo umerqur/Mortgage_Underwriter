@@ -61,3 +61,44 @@ export interface EngineResult {
   tags: string[];
   documents: Document[];
 }
+
+// Upload status
+export type UploadStatus = 'uploaded' | 'deleted';
+
+// Intake row from Supabase
+export interface Intake {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  created_by_user_id: string;
+  broker_name: string;
+  client_first_name: string;
+  client_last_name: string;
+  client_email: string | null;
+  client_phone: string | null;
+  form_answers: FormAnswers;
+  engine_tags: string[];
+  required_docs: Document[];
+  pdf_summary_path: string | null;
+}
+
+// Intake upload row from Supabase
+export interface IntakeUpload {
+  id: string;
+  created_at: string;
+  intake_id: string;
+  doc_id: string | null;
+  file_path: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number;
+  sha256: string | null;
+  upload_status: UploadStatus;
+  classification_status: string;
+  classified_doc_id: string | null;
+  classification_confidence: number | null;
+  extraction_status: string;
+  extraction_confidence: number | null;
+  extracted_json: Record<string, unknown> | null;
+  error_message: string | null;
+}
