@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FormAnswers, Document, Intake, IntakeUpload } from './types';
-import type { UnderwritingProfile, TaxDocumentExtraction } from './underwritingProfile';
+import type { UnderwritingProfile, DocumentExtractionResult } from './underwritingProfile';
 
 // ---------- Intakes ----------
 
@@ -171,7 +171,7 @@ export async function getSignedUrl(intakeId: string, filePath: string): Promise<
 // ---------- Document Extraction ----------
 
 export interface ExtractKeyInfoResult {
-  extraction: TaxDocumentExtraction;
+  extraction: DocumentExtractionResult;
   underwriting_profile: UnderwritingProfile;
 }
 
