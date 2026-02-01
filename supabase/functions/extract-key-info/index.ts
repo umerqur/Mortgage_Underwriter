@@ -222,17 +222,15 @@ serve(async (req: Request) => {
     // Parse the JWT from the incoming Authorization header and verify it
     // directly — do NOT rely on createClient header forwarding or
     // global.fetch injection, which is unreliable in the edge runtime.
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
-    }
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const match = authHeader.match(/^Bearer\s+(.+)$/i);
+    const jwt = match?.[1]?.trim() ?? "";
 
-    const jwt = authHeader.replace(/^Bearer\s+/i, "");
     if (!jwt) {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    const supabaseUser = createClient(
+    const userClient = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
     );
@@ -240,10 +238,10 @@ serve(async (req: Request) => {
     const {
       data: { user },
       error: userError,
-    } = await supabaseUser.auth.getUser(jwt);
+    } = await userClient.auth.getUser(jwt);
 
     if (userError || !user) {
-      return jsonResponse({ error: "Unauthorized" }, 401);
+      return jsonResponse({ error: userError?.message ?? "Unauthorized" }, 401);
     }
 
     // Step 2: Parse request
