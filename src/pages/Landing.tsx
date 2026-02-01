@@ -85,6 +85,9 @@ export default function Landing() {
             <p className="text-4xl font-bold text-slate-900 tracking-tight">
               Everything you need to move faster.
             </p>
+            <p className="mt-4 text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Reduce manual entry, follow ups, and avoidable underwriting delays.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
