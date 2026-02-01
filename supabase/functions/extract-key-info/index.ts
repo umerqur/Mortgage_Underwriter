@@ -1,6 +1,7 @@
 // Edge function: extract-key-info
 // Downloads an uploaded document, sends it to Claude for structured extraction,
-// merges the result into the intake's underwriting_profile, and returns the update.
+// merges underwriting facts into the intake's underwriting_profile, and stores
+// the full extraction result in intake_uploads.extracted_json.
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -27,20 +28,9 @@ function jsonResponse(
   });
 }
 
-// ---- Extraction types (mirrors src/lib/underwritingProfile.ts) ----
+// ---- Types ----
 
-interface TaxDocumentExtraction {
-  uploadId: string;
-  docId: string;
-  documentType: string;
-  documentLabel: string;
-  taxYear: number | null;
-  totalIncome: number | null;
-  netIncome: number | null;
-  taxableIncome: number | null;
-  taxpayerName: string | null;
-}
-
+// Canonical profile — only underwriting facts, no document metadata.
 interface UnderwritingProfile {
   borrower: {
     firstName: string;
@@ -62,10 +52,21 @@ interface UnderwritingProfile {
       sourceDocuments: string[];
     };
   };
-  extractedDocuments: TaxDocumentExtraction[];
   metadata: {
     lastUpdatedAt: string;
   };
+}
+
+// Transient extraction result — stored in intake_uploads.extracted_json,
+// NOT in the canonical profile.
+interface DocumentExtractionResult {
+  documentType: string;
+  documentLabel: string;
+  taxYear: number | null;
+  totalIncome: number | null;
+  netIncome: number | null;
+  taxableIncome: number | null;
+  taxpayerName: string | null;
 }
 
 // ---- Profile helpers ----
@@ -78,47 +79,45 @@ function createEmptyProfile(
   return {
     borrower: { firstName, lastName, email: email ?? undefined },
     income: {},
-    extractedDocuments: [],
     metadata: { lastUpdatedAt: new Date().toISOString() },
   };
 }
 
+/**
+ * Merge extraction into the canonical profile.
+ *
+ * Phase 1 merge rule:
+ *   The latest extraction FULLY OVERWRITES existing income values.
+ *   No averaging. No reconciliation. No conflict resolution.
+ *   sourceDocuments is set to the single source that produced the current values.
+ */
 function mergeExtraction(
   profile: UnderwritingProfile,
-  extraction: TaxDocumentExtraction,
+  extraction: DocumentExtractionResult,
 ): UnderwritingProfile {
-  const otherDocs = profile.extractedDocuments.filter(
-    (d) => d.uploadId !== extraction.uploadId,
-  );
-  const allExtractions = [...otherDocs, extraction];
-
-  const incomeExtractions = allExtractions
-    .filter(
-      (d) =>
-        d.totalIncome != null ||
-        d.netIncome != null ||
-        d.taxableIncome != null,
-    )
-    .sort((a, b) => (b.taxYear ?? 0) - (a.taxYear ?? 0));
-
   const income = { ...profile.income };
 
-  if (incomeExtractions.length > 0) {
-    const latest = incomeExtractions[0];
+  const hasIncomeValues =
+    extraction.totalIncome != null ||
+    extraction.netIncome != null ||
+    extraction.taxableIncome != null;
+
+  if (hasIncomeValues) {
+    const sourceLabel =
+      extraction.documentLabel +
+      (extraction.taxYear ? ` (${extraction.taxYear})` : "");
+
     income.employment = {
-      annualIncome: latest.totalIncome ?? undefined,
-      netIncome: latest.netIncome ?? undefined,
-      taxableIncome: latest.taxableIncome ?? undefined,
-      sourceDocuments: incomeExtractions.map(
-        (e) => `${e.documentLabel}${e.taxYear ? ` (${e.taxYear})` : ""}`,
-      ),
+      annualIncome: extraction.totalIncome ?? undefined,
+      netIncome: extraction.netIncome ?? undefined,
+      taxableIncome: extraction.taxableIncome ?? undefined,
+      sourceDocuments: [sourceLabel],
     };
   }
 
   return {
     ...profile,
     income,
-    extractedDocuments: allExtractions,
     metadata: { lastUpdatedAt: new Date().toISOString() },
   };
 }
@@ -255,7 +254,9 @@ serve(async (req: Request) => {
 
     const { data: intake, error: intakeError } = await adminClient
       .from("intakes")
-      .select("id, created_by_user_id, client_first_name, client_last_name, client_email, underwriting_profile")
+      .select(
+        "id, created_by_user_id, client_first_name, client_last_name, client_email, underwriting_profile",
+      )
       .eq("id", intake_id)
       .single();
 
@@ -297,16 +298,14 @@ serve(async (req: Request) => {
     // Step 6: Call Claude API
     const claudeResult = await callClaudeExtraction(bytes, upload.mime_type);
 
-    // Build document label from type
+    // Build human-readable label from document type
     const docLabelMap: Record<string, string> = {
       noa: "NOA",
       t1_general: "T1 General",
       other: "Document",
     };
 
-    const extraction: TaxDocumentExtraction = {
-      uploadId: upload_id,
-      docId: upload.doc_id ?? "",
+    const extraction: DocumentExtractionResult = {
       documentType: claudeResult.documentType ?? "other",
       documentLabel: docLabelMap[claudeResult.documentType] ?? "Document",
       taxYear: claudeResult.taxYear,
@@ -316,7 +315,9 @@ serve(async (req: Request) => {
       taxpayerName: claudeResult.taxpayerName,
     };
 
-    // Step 7: Merge into profile
+    // Step 7: Merge underwriting facts into canonical profile
+    // Only underwriting facts go into the profile. Document metadata stays
+    // in intake_uploads.extracted_json (step 8).
     let profile: UnderwritingProfile =
       (intake.underwriting_profile as UnderwritingProfile | null) ??
       createEmptyProfile(
@@ -327,7 +328,9 @@ serve(async (req: Request) => {
 
     profile = mergeExtraction(profile, extraction);
 
-    // Step 8: Save profile to intake + update upload extraction status
+    // Step 8: Persist
+    // - Profile (underwriting facts only) → intakes.underwriting_profile
+    // - Full extraction result (with document metadata) → intake_uploads.extracted_json
     const { error: updateIntakeError } = await adminClient
       .from("intakes")
       .update({ underwriting_profile: profile })
@@ -346,7 +349,10 @@ serve(async (req: Request) => {
       .eq("id", upload_id);
 
     if (updateUploadError) {
-      console.error("Failed to update upload extraction status:", updateUploadError);
+      console.error(
+        "Failed to update upload extraction status:",
+        updateUploadError,
+      );
     }
 
     return jsonResponse(
@@ -357,7 +363,8 @@ serve(async (req: Request) => {
       200,
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
     console.error("extract-key-info error:", message);
     return jsonResponse({ error: message }, 500);
   }

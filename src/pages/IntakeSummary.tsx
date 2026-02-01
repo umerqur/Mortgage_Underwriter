@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { Intake, IntakeUpload, Document } from '../lib/types';
-import type { TaxDocumentExtraction } from '../lib/underwritingProfile';
+import type { DocumentExtractionResult } from '../lib/underwritingProfile';
 import { getIntake, getActiveUploads, extractKeyInfo } from '../lib/intakeService';
 import { toVelocityDeal } from '../lib/velocityAdapter';
 import {
@@ -101,9 +101,18 @@ export default function IntakeSummary() {
 
       try {
         const result = await extractKeyInfo(intakeId, uploadId);
-        // Update intake with the new profile
+        // Update canonical profile on the intake
         setIntake((prev) =>
           prev ? { ...prev, underwriting_profile: result.underwriting_profile } : prev,
+        );
+        // Store extraction result on the upload's extracted_json so the
+        // per-document display reads from the upload row, not the profile.
+        setUploads((prev) =>
+          prev.map((u) =>
+            u.id === uploadId
+              ? { ...u, extracted_json: result.extraction, extraction_status: 'extracted' as const }
+              : u,
+          ),
         );
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Extraction failed';
@@ -113,16 +122,6 @@ export default function IntakeSummary() {
       }
     },
     [intakeId],
-  );
-
-  // Look up extraction result for a given upload
-  const getExtraction = useCallback(
-    (uploadId: string): TaxDocumentExtraction | undefined => {
-      return intake?.underwriting_profile?.extractedDocuments?.find(
-        (d) => d.uploadId === uploadId,
-      );
-    },
-    [intake?.underwriting_profile],
   );
 
   // Group required docs by category
@@ -295,6 +294,47 @@ export default function IntakeSummary() {
           </div>
         </div>
 
+        {/* Underwriting Summary — read-only, rendered from canonical profile */}
+        {intake.underwriting_profile?.income?.employment && (() => {
+          const emp = intake.underwriting_profile!.income.employment!;
+          const hasValues = emp.annualIncome != null || emp.netIncome != null || emp.taxableIncome != null;
+          if (!hasValues) return null;
+          return (
+            <div className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-100 px-6 py-4">
+                <h3 className="text-base font-semibold text-slate-900">Underwriting Summary</h3>
+              </div>
+              <div className="px-6 py-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  {emp.annualIncome != null && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Annual Income</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{formatCurrency(emp.annualIncome)}</p>
+                    </div>
+                  )}
+                  {emp.netIncome != null && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Net Income</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{formatCurrency(emp.netIncome)}</p>
+                    </div>
+                  )}
+                  {emp.taxableIncome != null && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Taxable Income</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900">{formatCurrency(emp.taxableIncome)}</p>
+                    </div>
+                  )}
+                </div>
+                {emp.sourceDocuments.length > 0 && (
+                  <p className="mt-3 text-xs text-slate-400">
+                    Source: {emp.sourceDocuments.join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Action bar */}
         <div className="mt-6 flex flex-wrap gap-3">
           <button
@@ -413,7 +453,7 @@ export default function IntakeSummary() {
                               const isDeleting = deletingUploads[upload.id] ?? false;
                               const isExtracting = extractingUploads[upload.id] ?? false;
                               const extractError = extractionErrors[upload.id];
-                              const extraction = getExtraction(upload.id);
+                              const extraction = upload.extracted_json as DocumentExtractionResult | null;
 
                               return (
                                 <div key={upload.id}>

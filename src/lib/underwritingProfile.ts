@@ -1,17 +1,14 @@
 // Canonical underwriting model — independent of any CRM or export format.
 // Documents populate this model. Export adapters read from it.
+//
+// This model stores ONLY underwriting facts. It does NOT store document
+// metadata such as upload IDs, document IDs, document types, or labels.
+// That data belongs to the extraction result (stored per-upload in
+// intake_uploads.extracted_json).
 
-export interface TaxDocumentExtraction {
-  uploadId: string;
-  docId: string;
-  documentType: string; // 'noa' | 't1_general' | 'other'
-  documentLabel: string; // Human-readable: "NOA", "T1 General", etc.
-  taxYear: number | null;
-  totalIncome: number | null;
-  netIncome: number | null;
-  taxableIncome: number | null;
-  taxpayerName: string | null;
-}
+// ---------------------------------------------------------------------------
+// Canonical profile — the system of truth
+// ---------------------------------------------------------------------------
 
 export interface UnderwritingProfile {
   borrower: {
@@ -37,12 +34,29 @@ export interface UnderwritingProfile {
     };
   };
 
-  extractedDocuments: TaxDocumentExtraction[];
-
   metadata: {
     lastUpdatedAt: string;
   };
 }
+
+// ---------------------------------------------------------------------------
+// Transient extraction result — stored in intake_uploads.extracted_json,
+// NOT persisted inside UnderwritingProfile.
+// ---------------------------------------------------------------------------
+
+export interface DocumentExtractionResult {
+  documentType: string; // 'noa' | 't1_general' | 'other'
+  documentLabel: string; // Human-readable: "NOA", "T1 General", etc.
+  taxYear: number | null;
+  totalIncome: number | null;
+  netIncome: number | null;
+  taxableIncome: number | null;
+  taxpayerName: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 export function createEmptyProfile(
   firstName: string,
@@ -56,51 +70,48 @@ export function createEmptyProfile(
       email: email ?? undefined,
     },
     income: {},
-    extractedDocuments: [],
     metadata: {
       lastUpdatedAt: new Date().toISOString(),
     },
   };
 }
 
+/**
+ * Merge an extraction result into the canonical profile.
+ *
+ * Phase 1 merge rule:
+ *   The latest extraction FULLY OVERWRITES existing income values.
+ *   No averaging. No reconciliation. No conflict resolution.
+ *   sourceDocuments is set to the single source that produced the current values.
+ *
+ * This will be revisited when multi-document reconciliation is needed.
+ */
 export function mergeExtraction(
   profile: UnderwritingProfile,
-  extraction: TaxDocumentExtraction,
+  extraction: DocumentExtractionResult,
 ): UnderwritingProfile {
-  // Replace any previous extraction for the same upload
-  const otherDocs = profile.extractedDocuments.filter(
-    (d) => d.uploadId !== extraction.uploadId,
-  );
-  const allExtractions = [...otherDocs, extraction];
-
-  // Rebuild income from most recent tax year extraction
-  const incomeExtractions = allExtractions
-    .filter(
-      (d) =>
-        d.totalIncome != null ||
-        d.netIncome != null ||
-        d.taxableIncome != null,
-    )
-    .sort((a, b) => (b.taxYear ?? 0) - (a.taxYear ?? 0));
-
   const income = { ...profile.income };
 
-  if (incomeExtractions.length > 0) {
-    const latest = incomeExtractions[0];
+  const hasIncomeValues =
+    extraction.totalIncome != null ||
+    extraction.netIncome != null ||
+    extraction.taxableIncome != null;
+
+  if (hasIncomeValues) {
+    const sourceLabel = extraction.documentLabel +
+      (extraction.taxYear ? ` (${extraction.taxYear})` : '');
+
     income.employment = {
-      annualIncome: latest.totalIncome ?? undefined,
-      netIncome: latest.netIncome ?? undefined,
-      taxableIncome: latest.taxableIncome ?? undefined,
-      sourceDocuments: incomeExtractions.map(
-        (e) => `${e.documentLabel}${e.taxYear ? ` (${e.taxYear})` : ''}`,
-      ),
+      annualIncome: extraction.totalIncome ?? undefined,
+      netIncome: extraction.netIncome ?? undefined,
+      taxableIncome: extraction.taxableIncome ?? undefined,
+      sourceDocuments: [sourceLabel],
     };
   }
 
   return {
     ...profile,
     income,
-    extractedDocuments: allExtractions,
     metadata: {
       lastUpdatedAt: new Date().toISOString(),
     },
