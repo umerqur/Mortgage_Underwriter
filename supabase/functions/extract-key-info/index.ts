@@ -219,15 +219,11 @@ serve(async (req: Request) => {
 
   try {
     // Step 1: Authenticate
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return jsonResponse({ error: "Missing authorization header" }, 401);
-    }
-
+    // Supabase edge runtime forwards the Authorization header automatically,
+    // so we only need the anon key — no manual header injection.
     const userClient = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
     );
 
     const {
