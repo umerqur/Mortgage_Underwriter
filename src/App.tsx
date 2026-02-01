@@ -6,7 +6,6 @@ import AuthCallback from './pages/AuthCallback';
 import DocsIntake from './pages/DocsIntake';
 import IntakesList from './pages/IntakesList';
 import IntakeSummary from './pages/IntakeSummary';
-import DocumentLocker from './pages/DocumentLocker';
 import ProtectedRoute from './components/ProtectedRoute';
 import TopBar from './components/TopBar';
 
@@ -56,16 +55,6 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <IntakeSummary />
-                </AppLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/intake/:intakeId/uploads"
-            element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <DocumentLocker />
                 </AppLayout>
               </ProtectedRoute>
             }

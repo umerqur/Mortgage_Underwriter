@@ -17,9 +17,7 @@ export default function TopBar() {
   // Determine context-aware left link
   let leftLink: { text: string; href: string } | null = null;
 
-  if (intakeId && location.pathname.endsWith('/uploads')) {
-    leftLink = { text: 'Back to Summary', href: `/intake/${intakeId}` };
-  } else if (intakeId && location.pathname.startsWith('/intake/')) {
+  if (intakeId && location.pathname.startsWith('/intake/')) {
     leftLink = { text: 'All Intakes', href: '/intakes' };
   } else if (location.pathname === '/intakes') {
     leftLink = { text: 'New Intake', href: '/app' };
