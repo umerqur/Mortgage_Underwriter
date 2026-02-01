@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { Intake, IntakeUpload, Document } from '../lib/types';
-import { getIntake, getActiveUploads } from '../lib/intakeService';
+import type { TaxDocumentExtraction } from '../lib/underwritingProfile';
+import { getIntake, getActiveUploads, extractKeyInfo } from '../lib/intakeService';
+import { toVelocityDeal } from '../lib/velocityAdapter';
 import {
   buildPdfBlob,
   generatePdfFilename,
@@ -27,6 +29,10 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatCurrency(value: number): string {
+  return `$${value.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
 export default function IntakeSummary() {
   const { intakeId } = useParams<{ intakeId: string }>();
   const navigate = useNavigate();
@@ -37,6 +43,8 @@ export default function IntakeSummary() {
   const [error, setError] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [extractingUploads, setExtractingUploads] = useState<Record<string, boolean>>({});
+  const [extractionErrors, setExtractionErrors] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     if (!intakeId) return;
@@ -80,6 +88,43 @@ export default function IntakeSummary() {
     previewError,
   } = useDocumentUpload({ intakeId, uploads, setUploads });
 
+  // Extraction handler
+  const handleExtract = useCallback(
+    async (uploadId: string) => {
+      if (!intakeId) return;
+      setExtractingUploads((prev) => ({ ...prev, [uploadId]: true }));
+      setExtractionErrors((prev) => {
+        const next = { ...prev };
+        delete next[uploadId];
+        return next;
+      });
+
+      try {
+        const result = await extractKeyInfo(intakeId, uploadId);
+        // Update intake with the new profile
+        setIntake((prev) =>
+          prev ? { ...prev, underwriting_profile: result.underwriting_profile } : prev,
+        );
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Extraction failed';
+        setExtractionErrors((prev) => ({ ...prev, [uploadId]: message }));
+      } finally {
+        setExtractingUploads((prev) => ({ ...prev, [uploadId]: false }));
+      }
+    },
+    [intakeId],
+  );
+
+  // Look up extraction result for a given upload
+  const getExtraction = useCallback(
+    (uploadId: string): TaxDocumentExtraction | undefined => {
+      return intake?.underwriting_profile?.extractedDocuments?.find(
+        (d) => d.uploadId === uploadId,
+      );
+    },
+    [intake?.underwriting_profile],
+  );
+
   // Group required docs by category
   const groupedDocs = (intake?.required_docs ?? []).reduce(
     (acc, doc) => {
@@ -91,7 +136,9 @@ export default function IntakeSummary() {
   );
 
   // Build a set of doc_ids that have at least one non-deleted upload
-  const uploadedDocIds = new Set(uploads.map((u) => u.doc_id).filter(Boolean));
+  const uploadedDocIds = new Set(
+    uploads.map((u) => u.doc_id).filter((id): id is string => id != null),
+  );
 
   const totalDocs = intake?.required_docs.length ?? 0;
   const uploadedCount = intake?.required_docs.filter((d) => uploadedDocIds.has(d.id)).length ?? 0;
@@ -127,37 +174,12 @@ export default function IntakeSummary() {
 
   const handleExportCrm = () => {
     if (!intake) return;
-    const payload = {
-      intake_id: intake.id,
-      broker_name: intake.broker_name,
-      client: {
-        first_name: intake.client_first_name,
-        last_name: intake.client_last_name,
-        email: intake.client_email,
-        phone: intake.client_phone,
-      },
-      created_at: intake.created_at,
-      engine_tags: intake.engine_tags,
-      required_docs: intake.required_docs.map((d) => ({
-        id: d.id,
-        name: d.name,
-        category: d.category,
-        status: uploadedDocIds.has(d.id) ? 'uploaded' : 'missing',
-      })),
-      uploads: uploads.map((u) => ({
-        id: u.id,
-        doc_id: u.doc_id,
-        file_name: u.file_name,
-        mime_type: u.mime_type,
-        size_bytes: u.size_bytes,
-        created_at: u.created_at,
-      })),
-    };
+    const payload = toVelocityDeal(intake, uploadedDocIds);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `intake-${intake.id.slice(0, 8)}.json`;
+    link.download = `velocity-deal-${intake.id.slice(0, 8)}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -386,49 +408,116 @@ export default function IntakeSummary() {
 
                         {/* Uploaded file chips */}
                         {docUploads.length > 0 && (
-                          <div className="ml-10 mt-2 space-y-1.5">
+                          <div className="ml-10 mt-2 space-y-2">
                             {docUploads.map((upload) => {
                               const isDeleting = deletingUploads[upload.id] ?? false;
+                              const isExtracting = extractingUploads[upload.id] ?? false;
+                              const extractError = extractionErrors[upload.id];
+                              const extraction = getExtraction(upload.id);
+
                               return (
-                                <div
-                                  key={upload.id}
-                                  className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 mr-2"
-                                >
-                                  <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                  </svg>
-                                  <span className="text-xs font-medium text-slate-700 max-w-[200px] truncate">
-                                    {upload.file_name}
-                                  </span>
-                                  <span className="text-xs text-slate-400">
-                                    {formatBytes(upload.size_bytes)}
-                                  </span>
-                                  {/* Preview button */}
-                                  <button
-                                    onClick={() => handlePreview(upload)}
-                                    className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
-                                    title="Preview"
-                                  >
-                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                <div key={upload.id}>
+                                  <div className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 mr-2">
+                                    <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
-                                  </button>
-                                  {/* Delete button */}
-                                  <button
-                                    onClick={() => handleDelete(upload)}
-                                    disabled={isDeleting}
-                                    className="rounded p-0.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                                    title="Delete"
-                                  >
-                                    {isDeleting ? (
-                                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
-                                    ) : (
+                                    <span className="text-xs font-medium text-slate-700 max-w-[200px] truncate">
+                                      {upload.file_name}
+                                    </span>
+                                    <span className="text-xs text-slate-400">
+                                      {formatBytes(upload.size_bytes)}
+                                    </span>
+                                    {/* Preview button */}
+                                    <button
+                                      onClick={() => handlePreview(upload)}
+                                      className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                                      title="Preview"
+                                    >
                                       <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                       </svg>
-                                    )}
-                                  </button>
+                                    </button>
+                                    {/* Delete button */}
+                                    <button
+                                      onClick={() => handleDelete(upload)}
+                                      disabled={isDeleting}
+                                      className="rounded p-0.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                      title="Delete"
+                                    >
+                                      {isDeleting ? (
+                                        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                                      ) : (
+                                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      )}
+                                    </button>
+                                    {/* Extract Key Info button */}
+                                    <button
+                                      onClick={() => handleExtract(upload.id)}
+                                      disabled={isExtracting}
+                                      className="ml-1 inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                      title="Extract underwriting data from this document"
+                                    >
+                                      {isExtracting ? (
+                                        <>
+                                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-amber-300 border-t-amber-700" />
+                                          Extracting...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                          </svg>
+                                          Extract Key Info
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+
+                                  {/* Extraction error */}
+                                  {extractError && (
+                                    <div className="mt-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                                      <p className="text-xs text-red-700">{extractError}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Extracted values display */}
+                                  {extraction && (
+                                    <div className="mt-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                                      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                                        {extraction.totalIncome != null && (
+                                          <>
+                                            <span className="text-xs text-slate-500">Total income</span>
+                                            <span className="text-xs font-semibold text-slate-800">{formatCurrency(extraction.totalIncome)}</span>
+                                          </>
+                                        )}
+                                        {extraction.netIncome != null && (
+                                          <>
+                                            <span className="text-xs text-slate-500">Net income</span>
+                                            <span className="text-xs font-semibold text-slate-800">{formatCurrency(extraction.netIncome)}</span>
+                                          </>
+                                        )}
+                                        {extraction.taxableIncome != null && (
+                                          <>
+                                            <span className="text-xs text-slate-500">Taxable income</span>
+                                            <span className="text-xs font-semibold text-slate-800">{formatCurrency(extraction.taxableIncome)}</span>
+                                          </>
+                                        )}
+                                        {extraction.taxpayerName != null && (
+                                          <>
+                                            <span className="text-xs text-slate-500">Taxpayer</span>
+                                            <span className="text-xs font-semibold text-slate-800">{extraction.taxpayerName}</span>
+                                          </>
+                                        )}
+                                      </div>
+                                      <p className="mt-2 text-xs text-slate-400">
+                                        Source: {extraction.documentLabel}
+                                        {extraction.taxYear ? ` (${extraction.taxYear})` : ''}
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
