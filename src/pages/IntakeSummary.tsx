@@ -327,7 +327,7 @@ export default function IntakeSummary() {
                 </div>
                 {emp.sourceDocuments.length > 0 && (
                   <p className="mt-3 text-xs text-slate-400">
-                    Source: {emp.sourceDocuments.join(', ')}
+                    Extraction source: {emp.sourceDocuments.join(', ')}
                   </p>
                 )}
               </div>
@@ -520,11 +520,12 @@ export default function IntakeSummary() {
                                   {extractError && (
                                     <div className="mt-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
                                       <p className="text-xs text-red-700">{extractError}</p>
+                                      <p className="mt-1 text-xs text-slate-500">Nothing extracted yet. Upload is saved. Preview should still work.</p>
                                     </div>
                                   )}
 
-                                  {/* Extracted values display */}
-                                  {extraction && (
+                                  {/* Extracted values display — only after successful extraction */}
+                                  {extraction && upload.extraction_status === 'extracted' && (
                                     <div className="mt-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
                                       <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
                                         {extraction.totalIncome != null && (
@@ -553,7 +554,7 @@ export default function IntakeSummary() {
                                         )}
                                       </div>
                                       <p className="mt-2 text-xs text-slate-400">
-                                        Source: {extraction.documentLabel}
+                                        Extraction source: {extraction.documentLabel}
                                         {extraction.taxYear ? ` (${extraction.taxYear})` : ''}
                                       </p>
                                     </div>
