@@ -219,9 +219,20 @@ serve(async (req: Request) => {
 
   try {
     // Step 1: Authenticate
-    // Supabase edge runtime forwards the Authorization header automatically,
-    // so we only need the anon key — no manual header injection.
-    const userClient = createClient(
+    // Parse the JWT from the incoming Authorization header and verify it
+    // directly — do NOT rely on createClient header forwarding or
+    // global.fetch injection, which is unreliable in the edge runtime.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const jwt = authHeader.replace(/^Bearer\s+/i, "");
+    if (!jwt) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const supabaseUser = createClient(
       SUPABASE_URL,
       Deno.env.get("SUPABASE_ANON_KEY")!,
     );
@@ -229,7 +240,7 @@ serve(async (req: Request) => {
     const {
       data: { user },
       error: userError,
-    } = await userClient.auth.getUser();
+    } = await supabaseUser.auth.getUser(jwt);
 
     if (userError || !user) {
       return jsonResponse({ error: "Unauthorized" }, 401);
