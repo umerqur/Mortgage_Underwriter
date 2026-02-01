@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { FormAnswers, Document, Intake, IntakeUpload } from './types';
+import type { UnderwritingProfile, TaxDocumentExtraction } from './underwritingProfile';
 
 // ---------- Intakes ----------
 
@@ -165,4 +166,41 @@ export async function getSignedUrl(intakeId: string, filePath: string): Promise<
 
   const { signed_url } = (await response.json()) as { signed_url: string };
   return signed_url;
+}
+
+// ---------- Document Extraction ----------
+
+export interface ExtractKeyInfoResult {
+  extraction: TaxDocumentExtraction;
+  underwriting_profile: UnderwritingProfile;
+}
+
+export async function extractKeyInfo(
+  intakeId: string,
+  uploadId: string,
+): Promise<ExtractKeyInfoResult> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+
+  if (!token) throw new Error('Not authenticated');
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-key-info`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ intake_id: intakeId, upload_id: uploadId }),
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error((body as Record<string, string>).error ?? 'Extraction failed');
+  }
+
+  return (await response.json()) as ExtractKeyInfoResult;
 }

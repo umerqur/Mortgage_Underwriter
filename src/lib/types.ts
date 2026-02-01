@@ -1,3 +1,5 @@
+import type { UnderwritingProfile } from './underwritingProfile';
+
 // Transaction types
 export type TransactionType = 'purchase_resale' | 'purchase_new' | 'renewal_refinance' | '';
 
@@ -77,6 +79,7 @@ export interface Intake {
   engine_tags: string[];
   required_docs: Document[];
   pdf_summary_path: string | null;
+  underwriting_profile: UnderwritingProfile | null;
 }
 
 // Database row: intake_uploads
