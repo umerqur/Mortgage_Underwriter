@@ -8,6 +8,8 @@ import {
   formatReportDate,
 } from '../lib/pdfReport';
 import EditIntakeModal from '../components/EditIntakeModal';
+import PreviewModal from '../components/PreviewModal';
+import { useDocumentUpload } from '../hooks/useDocumentUpload';
 
 const categoryOrder = ['transaction', 'property', 'income', 'net_worth', 'existing_properties'] as const;
 
@@ -18,6 +20,12 @@ const categoryLabels: Record<string, string> = {
   net_worth: 'Net Worth Documents',
   existing_properties: 'Existing Properties',
 };
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default function IntakeSummary() {
   const { intakeId } = useParams<{ intakeId: string }>();
@@ -52,6 +60,25 @@ export default function IntakeSummary() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const {
+    uploadingDocs,
+    uploadErrors,
+    deletingUploads,
+    uploadsByDoc,
+    handleUpload,
+    handleDelete,
+    handlePreview,
+    triggerFileInput,
+    setFileInputRef,
+    previewOpen,
+    closePreview,
+    previewUrl,
+    previewFileName,
+    previewMimeType,
+    previewLoading,
+    previewError,
+  } = useDocumentUpload({ intakeId, uploads, setUploads });
 
   // Group required docs by category
   const groupedDocs = (intake?.required_docs ?? []).reduce(
@@ -249,16 +276,6 @@ export default function IntakeSummary() {
         {/* Action bar */}
         <div className="mt-6 flex flex-wrap gap-3">
           <button
-            onClick={() => navigate(`/intake/${intakeId}/uploads`)}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Upload Documents
-          </button>
-
-          <button
             onClick={handleGeneratePdf}
             disabled={pdfLoading}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -297,39 +314,125 @@ export default function IntakeSummary() {
                 </div>
                 <ul className="divide-y divide-slate-100">
                   {docs.map((doc) => {
-                    const hasUpload = uploadedDocIds.has(doc.id);
-                    return (
-                      <li key={doc.id} className="flex items-center gap-4 px-6 py-3.5">
-                        {/* Status icon */}
-                        {hasUpload ? (
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100">
-                            <svg className="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </span>
-                        ) : (
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                            <span className="h-2 w-2 rounded-full bg-slate-400" />
-                          </span>
-                        )}
+                    const docUploads = uploadsByDoc[doc.id] ?? [];
+                    const hasUpload = docUploads.length > 0;
+                    const isUploading = uploadingDocs[doc.id] ?? false;
+                    const uploadError = uploadErrors[doc.id];
 
-                        {/* Doc name */}
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-slate-800">{doc.name}</p>
-                          {doc.note && (
-                            <p className="mt-0.5 text-xs text-slate-500">{doc.note}</p>
+                    return (
+                      <li key={doc.id} className="px-6 py-3.5">
+                        <div className="flex items-center gap-4">
+                          {/* Status icon */}
+                          {hasUpload ? (
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100">
+                              <svg className="h-3.5 w-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100">
+                              <span className="h-2 w-2 rounded-full bg-slate-400" />
+                            </span>
                           )}
+
+                          {/* Doc name */}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-slate-800">{doc.name}</p>
+                            {doc.note && (
+                              <p className="mt-0.5 text-xs text-slate-500">{doc.note}</p>
+                            )}
+                          </div>
+
+                          {/* Upload button (always available) */}
+                          <div className="shrink-0">
+                            <input
+                              ref={(el) => { setFileInputRef(doc.id, el); }}
+                              type="file"
+                              accept=".pdf,.png,.jpg,.jpeg,.webp,.tiff"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleUpload(doc.id, file);
+                              }}
+                            />
+                            <button
+                              onClick={() => triggerFileInput(doc.id)}
+                              disabled={isUploading}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {isUploading ? (
+                                <>
+                                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                  </svg>
+                                  Upload
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
 
-                        {/* Status pill */}
-                        {hasUpload ? (
-                          <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 ring-1 ring-green-200">
-                            Uploaded
-                          </span>
-                        ) : (
-                          <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
-                            Missing
-                          </span>
+                        {/* Upload error */}
+                        {uploadError && (
+                          <div className="ml-10 mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                            <p className="text-xs text-red-700">{uploadError}</p>
+                          </div>
+                        )}
+
+                        {/* Uploaded file chips */}
+                        {docUploads.length > 0 && (
+                          <div className="ml-10 mt-2 space-y-1.5">
+                            {docUploads.map((upload) => {
+                              const isDeleting = deletingUploads[upload.id] ?? false;
+                              return (
+                                <div
+                                  key={upload.id}
+                                  className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 mr-2"
+                                >
+                                  <svg className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <span className="text-xs font-medium text-slate-700 max-w-[200px] truncate">
+                                    {upload.file_name}
+                                  </span>
+                                  <span className="text-xs text-slate-400">
+                                    {formatBytes(upload.size_bytes)}
+                                  </span>
+                                  {/* Preview button */}
+                                  <button
+                                    onClick={() => handlePreview(upload)}
+                                    className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                                    title="Preview"
+                                  >
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+                                  {/* Delete button */}
+                                  <button
+                                    onClick={() => handleDelete(upload)}
+                                    disabled={isDeleting}
+                                    className="rounded p-0.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                    title="Delete"
+                                  >
+                                    {isDeleting ? (
+                                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                                    ) : (
+                                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </li>
                     );
@@ -356,6 +459,17 @@ export default function IntakeSummary() {
           onClose={() => setEditOpen(false)}
           intake={intake}
           onSaved={(updated) => setIntake(updated)}
+        />
+
+        {/* Preview modal */}
+        <PreviewModal
+          open={previewOpen}
+          onClose={closePreview}
+          url={previewUrl}
+          fileName={previewFileName}
+          mimeType={previewMimeType}
+          loading={previewLoading}
+          error={previewError}
         />
       </div>
     </div>
